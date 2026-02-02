@@ -1,0 +1,85 @@
+# Liquidation Risk
+
+## Overview
+
+**Collateralized borrowing on Fira carries material liquidation risk.** Liquidations may occur rapidly, automatically, and without notice and can result in partial or total loss of your collateral, particularly during volatile conditions.
+
+## 1. Risk Description
+
+### Collateral Framework
+
+Users must post collateral to borrow funds. The protocol uses two key metrics:
+
+- **Loan-to-Value (LTV)**: The ratio chosen at origination
+- **Liquidation Loan-to-Value (LLTV)**: The threshold that triggers liquidation eligibility
+
+Position health is determined by comparing collateral market value against outstanding debt using protocol pricing sources and risk parameters.
+
+### Fixed-Maturity Market Mechanics
+
+In these markets, borrowers typically obtain BT tokens and may exchange them for underlying assets. The protocol treats BT as 1:1 with the underlying borrowed asset for liquidation purposes, reducing dependency on secondary market BT pricing. This approach does not eliminate liquidation risk or guarantee favorable execution pricing.
+
+### Liquidation Triggers
+
+A position becomes liquidatable when LTV exceeds LLTV, typically due to:
+
+- Collateral value decline
+- Borrowed asset value increase
+- Volatility or risk parameter changes
+- Oracle/pricing failures or delays
+
+### Liquidation Execution
+
+Third-party liquidators repay debt in exchange for seizing collateral according to protocol rules (liquidation bonuses, close factors, fees). Liquidations may be partial or complete depending on severity.
+
+## 2. Risk Materialization Scenarios
+
+### Rapid Price Movements
+
+Sharp collateral declines or borrowed asset increases can exceed LLTV before user response.
+
+### Liquidity Constraints
+
+Repayment attempts may encounter slippage and unfavorable pricing.
+
+### Network Congestion
+
+Transaction delays for collateral additions or repayment may allow liquidation to proceed first.
+
+### Pricing Disruptions
+
+Oracle outages or delays trigger sudden health deterioration.
+
+### Cascading Liquidations
+
+Systemic stress may cause simultaneous liquidations with worsened execution.
+
+Liquidations occur with little or no warning and may involve unfavorable execution during stressed conditions.
+
+## 3. Mitigations and Limitations
+
+Fira provides interface tools to manage liquidation risk, but **these are not guarantees. You may still be liquidated and lose collateral.**
+
+### Conservative Leverage
+
+Lower initial LTV creates a buffer but requires more collateral and fails during severe moves.
+
+### Active Monitoring
+
+Adding collateral or repaying debt may be impossible to execute timely; market conditions may deteriorate faster than response capability.
+
+### Partial Repayment
+
+Reduces LTV but requires asset sales during stress, incurring fees and facing liquidity constraints.
+
+### Interface Metrics
+
+LTV ranges and health factors are indicative only and may be delayed or inaccurate.
+
+### Automation Features
+
+Any automated deleveraging may fail, trigger unexpectedly, perform poorly under stress, or be unavailable.
+
+## 4. Key Takeaway
+
+**Liquidation risk is inherent to collateralized borrowing.** Do not assume you will be able to add collateral, refinance, or repay in time, especially during extreme market conditions. Use Fira only with full understanding of liquidation mechanics and acceptance of potential total collateral loss.

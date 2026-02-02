@@ -1,0 +1,77 @@
+# Collateral Risk
+
+## Overview
+
+Collateral assets used in Fira markets may experience deterioration or failures that impact position health and protocol stability.
+
+## Risk Description
+
+Collateral risk encompasses two primary categories:
+
+### Market Deterioration
+
+General market conditions may cause collateral assets to lose value relative to borrowed assets, increasing liquidation probability.
+
+### Asset-Specific Failures
+
+Individual collateral assets may experience:
+
+- Smart contract vulnerabilities or exploits
+- Oracle manipulation or failures
+- Depegging events (for stablecoins or pegged assets)
+- Liquidity crises specific to the asset
+- Governance attacks or protocol failures
+
+## Materialization Scenarios
+
+### Sudden Price Drops
+
+Rapid collateral devaluation exceeds user response capability.
+
+### Depeg Events
+
+Pegged assets lose their peg, causing immediate health factor deterioration.
+
+### Protocol Exploits
+
+Underlying collateral protocols experience security incidents.
+
+### Liquidity Crises
+
+Collateral assets become illiquid, preventing orderly liquidation.
+
+## Mitigation Strategies
+
+### Conservative Collateralization
+
+Maintain LTV well below LLTV to create safety buffers.
+
+### Collateral Diversification
+
+When possible, avoid concentration in single collateral types.
+
+### Active Monitoring
+
+Regularly monitor collateral health and market conditions.
+
+### Understanding Asset Risks
+
+Research and understand the specific risks of each collateral asset.
+
+## Protocol-Level Mitigations
+
+Fira may implement:
+
+- Collateral quality assessments
+- Exposure limits per collateral type
+- Conservative LLTV parameters for riskier assets
+- Real-time monitoring and alerts
+
+## Important Notice
+
+Collateral risk cannot be eliminated. Users should:
+
+- Understand the specific risks of their chosen collateral
+- Maintain conservative position sizing
+- Be prepared for rapid market movements
+- Accept the possibility of total collateral loss
