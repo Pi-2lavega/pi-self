@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect } from 'react'
 import {
   LineChart,
@@ -353,8 +355,16 @@ export function AssetDashboard() {
   const [timeRange, setTimeRange] = useState<number>(30)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isLiveData, setIsLiveData] = useState<boolean>(false)
+  const [isMounted, setIsMounted] = useState<boolean>(false)
+
+  // Ensure component only renders charts on client side
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   useEffect(() => {
+    if (!isMounted) return
+
     const loadData = async () => {
       setIsLoading(true)
       const data: AssetData = {}
@@ -380,7 +390,7 @@ export function AssetDashboard() {
     }
 
     loadData()
-  }, [timeRange])
+  }, [timeRange, isMounted])
 
   // Get latest values for summary cards
   const getLatestValue = (asset: string, field: keyof AssetDataPoint) => {
@@ -412,7 +422,8 @@ export function AssetDashboard() {
     return assetData[asset] || []
   }
 
-  if (isLoading) {
+  // Don't render charts until mounted on client
+  if (!isMounted || isLoading) {
     return (
       <div style={styles.container}>
         <div style={styles.loading}>Loading data...</div>
