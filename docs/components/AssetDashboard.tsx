@@ -71,29 +71,65 @@ const transformDuneData = (rows: any[]): AssetDataPoint[] => {
   // Log first row to debug data structure
   if (rows.length > 0) {
     console.log('Dune row sample:', rows[0])
+    console.log('Dune row keys:', Object.keys(rows[0]))
   }
 
   return rows
     .map((row) => {
-      // Handle different timestamp formats
-      const rawTimestamp = row.timestamp || row.date || row.time || row.block_time || ''
-      const timestamp = typeof rawTimestamp === 'string'
-        ? rawTimestamp.split('T')[0]
-        : new Date(rawTimestamp).toISOString().split('T')[0]
+      // Handle different timestamp formats from Dune API
+      // Common field names: timestamp, date, time, block_time, day, evt_block_time, block_date
+      const rawTimestamp = row.timestamp || row.date || row.time || row.block_time ||
+                          row.day || row.evt_block_time || row.block_date || ''
+
+      let timestamp = ''
+      if (rawTimestamp) {
+        try {
+          if (typeof rawTimestamp === 'string') {
+            // Handle ISO format (2024-01-15T00:00:00.000Z) or date only (2024-01-15)
+            timestamp = rawTimestamp.split('T')[0]
+          } else if (typeof rawTimestamp === 'number') {
+            // Handle Unix timestamp (seconds or milliseconds)
+            const ms = rawTimestamp > 1e12 ? rawTimestamp : rawTimestamp * 1000
+            timestamp = new Date(ms).toISOString().split('T')[0]
+          } else {
+            timestamp = new Date(rawTimestamp).toISOString().split('T')[0]
+          }
+
+          // Validate the parsed date
+          const testDate = new Date(timestamp)
+          if (isNaN(testDate.getTime())) {
+            timestamp = ''
+          }
+        } catch {
+          timestamp = ''
+        }
+      }
 
       const price = Number(row.price) || 0
       const delta = Number(row.delta) || 0
 
       // Calculate APR from rate field, or derive from delta (annualized)
       // delta is typically daily change, so APR = delta * 365 * 100
-      let rate = Number(row.rate) || 0
+      let rate = Number(row.rate) || Number(row.apr) || Number(row.yield) || 0
       if (rate === 0 && delta !== 0) {
         rate = delta * 365 * 100 // Annualize daily delta to APR percentage
       }
 
+      // Sanitize rate to reasonable bounds (-100% to 1000%)
+      // Extreme values likely indicate data issues
+      if (rate < -100 || rate > 1000) {
+        console.warn('Extreme rate value filtered:', rate, 'for timestamp:', timestamp)
+        rate = 0
+      }
+
       return { timestamp, price, delta, rate }
     })
-    .filter((row) => row.timestamp && row.timestamp !== 'Invalid Date')
+    .filter((row) => {
+      // Filter out rows with invalid timestamps
+      if (!row.timestamp) return false
+      const date = new Date(row.timestamp)
+      return !isNaN(date.getTime())
+    })
     .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
 }
 
@@ -473,7 +509,9 @@ export function AssetDashboard() {
                 stroke="#9CA3AF"
                 tick={{ fill: '#9CA3AF', fontSize: 12 }}
                 tickFormatter={(value) => {
+                  if (!value || typeof value !== 'string') return ''
                   const date = new Date(value)
+                  if (isNaN(date.getTime())) return value
                   return `${date.getMonth() + 1}/${date.getDate()}`
                 }}
               />
@@ -547,7 +585,9 @@ export function AssetDashboard() {
                       stroke="#9CA3AF"
                       tick={{ fill: '#9CA3AF', fontSize: 12 }}
                       tickFormatter={(value) => {
+                        if (!value || typeof value !== 'string') return ''
                         const date = new Date(value)
+                        if (isNaN(date.getTime())) return value
                         return `${date.getMonth() + 1}/${date.getDate()}`
                       }}
                     />
