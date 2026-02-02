@@ -513,7 +513,7 @@ export function AssetDashboard() {
 
       {/* Time Range Selector */}
       <div style={styles.tabContainer}>
-        {[14, 30, 90].map((days) => (
+        {[14, 30, 60, 90].map((days) => (
           <button
             key={days}
             style={timeRange === days ? styles.tabActive : styles.tab}
