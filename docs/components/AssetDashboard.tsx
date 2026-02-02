@@ -29,22 +29,32 @@ const generateMockData = (basePrice: number, baseRate: number, days: number = 30
   const data: AssetDataPoint[] = []
   const now = new Date()
 
+  // Daily yield rate (APR / 365)
+  const dailyYield = baseRate / 100 / 365
+
   for (let i = days; i >= 0; i--) {
     const date = new Date(now)
     date.setDate(date.getDate() - i)
 
-    // Add some realistic variation
-    const priceVariation = (Math.random() - 0.5) * 0.02 * basePrice
-    const rateVariation = (Math.random() - 0.5) * 0.5
+    // Days elapsed from start (price increases over time due to yield accumulation)
+    const daysElapsed = days - i
 
-    const price = basePrice + priceVariation + (i * 0.001 * basePrice)
+    // Price grows with accumulated yield + small random variation
+    const accumulatedYield = basePrice * dailyYield * daysElapsed
+    const randomVariation = (Math.random() - 0.5) * 0.002 * basePrice
+    const price = basePrice + accumulatedYield + randomVariation
+
+    // Rate varies slightly around base rate
+    const rateVariation = (Math.random() - 0.5) * 0.5
     const rate = baseRate + rateVariation
-    const delta = (Math.random() - 0.5) * 0.1
+
+    // Delta is the daily change percentage
+    const delta = dailyYield + (Math.random() - 0.5) * 0.001
 
     data.push({
       timestamp: date.toISOString().split('T')[0],
-      price: Number(price.toFixed(4)),
-      delta: Number(delta.toFixed(4)),
+      price: Number(price.toFixed(6)),
+      delta: Number(delta.toFixed(6)),
       rate: Number(rate.toFixed(2)),
     })
   }
@@ -327,16 +337,16 @@ export function AssetDashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--vocs-color-border)" />
               <XAxis
                 dataKey="timestamp"
-                stroke="var(--vocs-color-text3)"
-                fontSize={12}
+                stroke="#9CA3AF"
+                tick={{ fill: '#9CA3AF', fontSize: 12 }}
                 tickFormatter={(value) => {
                   const date = new Date(value)
                   return `${date.getMonth() + 1}/${date.getDate()}`
                 }}
               />
               <YAxis
-                stroke="var(--vocs-color-text3)"
-                fontSize={12}
+                stroke="#9CA3AF"
+                tick={{ fill: '#9CA3AF', fontSize: 12 }}
                 tickFormatter={(value) => `${value}%`}
               />
               <Tooltip content={<CustomTooltip />} />
@@ -401,18 +411,18 @@ export function AssetDashboard() {
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--vocs-color-border)" />
                     <XAxis
                       dataKey="timestamp"
-                      stroke="var(--vocs-color-text3)"
-                      fontSize={12}
+                      stroke="#9CA3AF"
+                      tick={{ fill: '#9CA3AF', fontSize: 12 }}
                       tickFormatter={(value) => {
                         const date = new Date(value)
                         return `${date.getMonth() + 1}/${date.getDate()}`
                       }}
                     />
                     <YAxis
-                      stroke="var(--vocs-color-text3)"
-                      fontSize={12}
+                      stroke="#9CA3AF"
+                      tick={{ fill: '#9CA3AF', fontSize: 12 }}
                       domain={['auto', 'auto']}
-                      tickFormatter={(value) => `$${value.toFixed(2)}`}
+                      tickFormatter={(value) => `$${value.toFixed(4)}`}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Area
