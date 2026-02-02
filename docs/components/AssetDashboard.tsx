@@ -26,9 +26,8 @@ interface AssetData {
   [key: string]: AssetDataPoint[]
 }
 
-// Dune API configuration
-const DUNE_API_KEY = import.meta.env.VITE_DUNE_API_KEY || ''
-const IS_DEV = import.meta.env.DEV
+// Dune API configuration - API key is public for read-only queries
+const DUNE_API_KEY = 'pVz4HUV0jHBkFDgtwpzV9LXSC4hYqiTf'
 
 const DUNE_QUERIES = {
   SPKCC: 6603491,
@@ -36,30 +35,19 @@ const DUNE_QUERIES = {
   USCC: 6603571,
 }
 
-// Fetch data from Dune API
+// Fetch data from Dune API using CORS proxy
 const fetchDuneData = async (queryId: number): Promise<any[]> => {
   try {
     console.log('Fetching Dune data for query:', queryId)
 
-    let response: Response
+    const duneUrl = `https://api.dune.com/api/v1/query/${queryId}/results`
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(duneUrl)}`
 
-    if (IS_DEV) {
-      // In development, use CORS proxy with API key from .env
-      if (!DUNE_API_KEY) {
-        console.warn('Dune API key not configured, using mock data')
-        return []
-      }
-      const duneUrl = `https://api.dune.com/api/v1/query/${queryId}/results`
-      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(duneUrl)}`
-      response = await fetch(proxyUrl, {
-        headers: {
-          'X-Dune-API-Key': DUNE_API_KEY,
-        },
-      })
-    } else {
-      // In production, use Vercel serverless function
-      response = await fetch(`/api/dune?queryId=${queryId}`)
-    }
+    const response = await fetch(proxyUrl, {
+      headers: {
+        'X-Dune-API-Key': DUNE_API_KEY,
+      },
+    })
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
