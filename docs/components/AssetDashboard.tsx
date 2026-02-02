@@ -342,27 +342,31 @@ const styles = {
 
 // Helper function to format dates for chart X-axis
 const formatDateForChart = (value: any): string => {
+  // Debug: log first few values to understand what recharts passes
+  if (typeof window !== 'undefined' && !(window as any).__dateFormatLogged) {
+    console.log('formatDateForChart called with:', value, 'type:', typeof value)
+    ;(window as any).__dateFormatLogCount = ((window as any).__dateFormatLogCount || 0) + 1
+    if ((window as any).__dateFormatLogCount >= 3) {
+      (window as any).__dateFormatLogged = true
+    }
+  }
+
   if (value === null || value === undefined || value === '') {
     return ''
   }
 
-  try {
-    // If it's already a formatted date string like "2024-01-15"
-    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-      const [year, month, day] = value.split('-').map(Number)
-      return `${month}/${day}`
-    }
-
-    // Try to parse as date
-    const date = new Date(value)
-    if (!isNaN(date.getTime())) {
-      return `${date.getMonth() + 1}/${date.getDate()}`
-    }
-
-    return String(value)
-  } catch {
-    return String(value)
+  // If it's already a formatted date string like "2024-01-15"
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [, month, day] = value.split('-').map(Number)
+    return `${month}/${day}`
   }
+
+  // If it's a number (recharts might pass index or timestamp)
+  if (typeof value === 'number') {
+    return ''
+  }
+
+  return String(value).substring(0, 10)
 }
 
 // Custom tooltip component
