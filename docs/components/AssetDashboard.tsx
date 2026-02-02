@@ -26,37 +26,26 @@ interface AssetData {
   [key: string]: AssetDataPoint[]
 }
 
-// Dune API configuration
-const DUNE_API_KEY = import.meta.env.VITE_DUNE_API_KEY || ''
-
+// Dune query IDs
 const DUNE_QUERIES = {
   SPKCC: 6603491,
   eurSPKCC: 6598168,
   USCC: 6603571,
 }
 
-// Fetch data from Dune API (using CORS proxy for browser compatibility)
+// Fetch data from Dune API via Vercel serverless function
 const fetchDuneData = async (queryId: number): Promise<any[]> => {
-  if (!DUNE_API_KEY) {
-    console.warn('Dune API key not configured, using mock data')
-    return []
-  }
-
   try {
-    // Use CORS proxy to bypass browser restrictions
-    const duneUrl = `https://api.dune.com/api/v1/query/${queryId}/results`
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(duneUrl)}`
+    // Use our API route which handles the Dune API key server-side
+    const apiUrl = `/api/dune?queryId=${queryId}`
 
     console.log('Fetching Dune data for query:', queryId)
 
-    const response = await fetch(proxyUrl, {
-      headers: {
-        'X-Dune-API-Key': DUNE_API_KEY,
-      },
-    })
+    const response = await fetch(apiUrl)
 
     if (!response.ok) {
-      throw new Error(`Dune API error: ${response.status}`)
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.error || `API error: ${response.status}`)
     }
 
     const data = await response.json()
@@ -723,7 +712,7 @@ export function AssetDashboard() {
       }}>
         <p style={{ fontSize: '12px', color: 'var(--vocs-color-text3)' }}>
           Data source: Dune Analytics queries (SPKCC: 6603491, eurSPKCC: 6598168, USCC: 6603571).
-          {!isLiveData && ' Configure VITE_DUNE_API_KEY environment variable for live data.'}
+          {!isLiveData && ' Unable to fetch live data from Dune Analytics.'}
         </p>
       </div>
     </div>
