@@ -332,6 +332,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     const validPayload = payload.filter((entry: any) => entry.value != null)
     if (validPayload.length === 0) return null
 
+    const formatValue = (entry: any) => {
+      const value = typeof entry.value === 'number' ? entry.value.toFixed(2) : entry.value
+      // ROI values don't have %, APR values do
+      if (entry.name === 'ROI') {
+        return value
+      }
+      return `${value}%`
+    }
+
     return (
       <div style={{
         backgroundColor: 'var(--vocs-color-background)',
@@ -343,7 +352,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <p style={{ fontSize: '12px', color: 'var(--vocs-color-text2)', marginBottom: '8px' }}>{label}</p>
         {validPayload.map((entry: any, index: number) => (
           <p key={index} style={{ fontSize: '14px', color: entry.color, marginBottom: '4px' }}>
-            {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(2) : entry.value}%
+            {entry.name}: {formatValue(entry)}
           </p>
         ))}
       </div>
@@ -485,9 +494,20 @@ export function AssetDashboard() {
     }))
   }
 
-  // Prepare data for price chart of a specific asset
-  const preparePriceChartData = (asset: string) => {
-    return assetData[asset] || []
+  // Prepare data for ROI chart of a specific asset (base 100)
+  const prepareROIChartData = (asset: string) => {
+    const data = assetData[asset] || []
+    if (data.length === 0) return []
+
+    // Get the first price as the base
+    const basePrice = data[0].price
+    if (!basePrice || basePrice === 0) return []
+
+    // Convert prices to ROI base 100
+    return data.map(point => ({
+      ...point,
+      roi: (point.price / basePrice) * 100
+    }))
   }
 
   if (isLoading) {
@@ -618,9 +638,9 @@ export function AssetDashboard() {
         </div>
       </div>
 
-      {/* Individual Price Charts */}
+      {/* Individual ROI Charts (Base 100) */}
       <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Price Charts by Asset</h2>
+        <h2 style={styles.sectionTitle}>ROI Charts by Asset (Base 100)</h2>
 
         {/* Asset Selector */}
         <div style={styles.tabContainer}>
@@ -641,15 +661,15 @@ export function AssetDashboard() {
           ))}
         </div>
 
-        {/* Price Charts */}
+        {/* ROI Charts */}
         <div style={{ display: 'grid', gridTemplateColumns: selectedAsset === 'all' ? 'repeat(auto-fit, minmax(400px, 1fr))' : '1fr', gap: '24px' }}>
           {(selectedAsset === 'all' ? Object.keys(ASSETS) : [selectedAsset]).map((assetKey) => {
             const config = ASSETS[assetKey as keyof typeof ASSETS]
-            const data = preparePriceChartData(assetKey)
+            const data = prepareROIChartData(assetKey)
 
             return (
               <div key={assetKey} style={styles.chartContainer}>
-                <h3 style={styles.chartTitle}>{config.name} Price</h3>
+                <h3 style={styles.chartTitle}>{config.name} ROI (Base 100)</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <defs>
@@ -659,6 +679,7 @@ export function AssetDashboard() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--vocs-color-border)" />
+                    <ReferenceLine y={100} stroke="rgba(156, 163, 175, 0.5)" strokeDasharray="3 3" />
                     <XAxis
                       dataKey="timestamp"
                       stroke="#9CA3AF"
@@ -672,13 +693,13 @@ export function AssetDashboard() {
                       stroke="#9CA3AF"
                       tick={{ fill: '#9CA3AF', fontSize: 12 }}
                       domain={['auto', 'auto']}
-                      tickFormatter={(value) => `$${value.toFixed(4)}`}
+                      tickFormatter={(value) => value.toFixed(1)}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Area
                       type="monotone"
-                      dataKey="price"
-                      name="Price"
+                      dataKey="roi"
+                      name="ROI"
                       stroke={config.color}
                       strokeWidth={2}
                       fill={`url(#gradient-${assetKey})`}
