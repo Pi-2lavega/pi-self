@@ -5,7 +5,11 @@ import {
   Cell,
   ResponsiveContainer,
   Tooltip,
-  Legend,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
 } from 'recharts'
 
 // Types
@@ -84,195 +88,15 @@ const DIRECTIONAL_TOKENS = new Set(['ETH', 'WETH', 'ETH0', 'USUAL', 'USUALX', 'S
 const DIRECTIONAL_PROTOCOLS = ['Arrakis']
 const SEMI_LIQUID_PROTOCOLS = ['Fira', 'Aave']
 
-// Styles
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    padding: '24px',
-    maxWidth: '1600px',
-    margin: '0 auto',
-  },
-  header: {
-    marginBottom: '32px',
-  },
-  title: {
-    fontSize: '28px',
-    fontWeight: 700,
-    marginBottom: '8px',
-    color: 'var(--vocs-color-text)',
-  },
-  subtitle: {
-    fontSize: '16px',
-    color: 'var(--vocs-color-text2)',
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '16px',
-    marginBottom: '32px',
-  },
-  statCard: {
-    backgroundColor: 'var(--vocs-color-background2)',
-    borderRadius: '12px',
-    padding: '20px',
-    border: '1px solid var(--vocs-color-border)',
-    position: 'relative' as const,
-    overflow: 'hidden',
-  },
-  statCardAccent: {
-    position: 'absolute' as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '3px',
-  },
-  statLabel: {
-    fontSize: '13px',
-    fontWeight: 500,
-    color: 'var(--vocs-color-text2)',
-    marginBottom: '8px',
-  },
-  statValue: {
-    fontSize: '28px',
-    fontWeight: 700,
-    color: 'var(--vocs-color-text)',
-  },
-  statSub: {
-    fontSize: '12px',
-    color: 'var(--vocs-color-text3)',
-    marginTop: '6px',
-  },
-  section: {
-    marginBottom: '32px',
-  },
-  sectionTitle: {
-    fontSize: '20px',
-    fontWeight: 600,
-    marginBottom: '16px',
-    color: 'var(--vocs-color-text)',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-  },
-  card: {
-    backgroundColor: 'var(--vocs-color-background2)',
-    borderRadius: '16px',
-    border: '1px solid var(--vocs-color-border)',
-    overflow: 'hidden',
-  },
-  cardHeader: {
-    padding: '18px 20px',
-    borderBottom: '1px solid var(--vocs-color-border)',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cardBody: {
-    padding: '16px 20px',
-  },
-  protocolGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-    gap: '12px',
-    marginBottom: '24px',
-  },
-  protocolCard: {
-    backgroundColor: 'var(--vocs-color-background2)',
-    borderRadius: '12px',
-    padding: '16px',
-    border: '1px solid var(--vocs-color-border)',
-  },
-  strategyGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: '16px',
-  },
-  strategyCard: {
-    backgroundColor: 'var(--vocs-color-background2)',
-    borderRadius: '12px',
-    padding: '20px',
-    border: '1px solid var(--vocs-color-border)',
-    position: 'relative' as const,
-    overflow: 'hidden',
-  },
-  walletRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '14px 0',
-    borderBottom: '1px solid var(--vocs-color-border)',
-  },
-  tokenItem: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '12px 0',
-    borderBottom: '1px solid var(--vocs-color-border)',
-  },
-  tokenIcon: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '50%',
-    marginRight: '12px',
-    backgroundColor: 'var(--vocs-color-background)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontWeight: 600,
-    fontSize: '12px',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-  },
-  badge: {
-    padding: '3px 8px',
-    borderRadius: '6px',
-    fontSize: '10px',
-    fontWeight: 600,
-  },
-  loading: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '40px',
-    color: 'var(--vocs-color-text2)',
-  },
-  apiKeyContainer: {
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    border: '1px solid rgba(245, 158, 11, 0.3)',
-    borderRadius: '12px',
-    padding: '20px',
-    marginBottom: '24px',
-    textAlign: 'center' as const,
-  },
-  apiKeyButton: {
-    backgroundColor: '#f59e0b',
-    color: 'white',
-    border: 'none',
-    padding: '10px 20px',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    marginTop: '12px',
-  },
-  refreshButton: {
-    backgroundColor: 'var(--vocs-color-background)',
-    border: '1px solid var(--vocs-color-border)',
-    color: 'var(--vocs-color-text)',
-    padding: '8px 16px',
-    borderRadius: '8px',
-    fontSize: '13px',
-    fontWeight: 500,
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  statusDot: {
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-    display: 'inline-block',
-    marginRight: '8px',
-  },
+// Color palette
+const COLORS = {
+  green: '#10B981',
+  blue: '#3B82F6',
+  purple: '#8B5CF6',
+  pink: '#EC4899',
+  orange: '#F59E0B',
+  cyan: '#06B6D4',
+  red: '#EF4444',
 }
 
 // Utility functions
@@ -321,7 +145,7 @@ const getProtocolColor = (name: string): string => {
     hashnote: '#60a5fa',
   }
   const key = name.toLowerCase().split(' ')[0]
-  return colors[key] || '#8888a0'
+  return colors[key] || '#6B7280'
 }
 
 const getDisplayName = (symbol: string): string => {
@@ -335,45 +159,34 @@ const getDisplayName = (symbol: string): string => {
   return nameMap[symbol] || symbol
 }
 
-// API functions - use Vercel serverless function to bypass CORS
+// API functions
 const fetchDeBank = async (endpoint: string, address: string, apiKey: string): Promise<any> => {
-  // Check if we're on localhost (dev mode) or production
   const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost'
 
   if (isLocalhost) {
-    // In dev mode, use a CORS proxy since serverless functions aren't available
     const endpoints: Record<string, string> = {
       total_balance: `https://pro-openapi.debank.com/v1/user/total_balance?id=${address}`,
       all_token_list: `https://pro-openapi.debank.com/v1/user/all_token_list?id=${address}&is_all=true`,
       all_complex_protocol_list: `https://pro-openapi.debank.com/v1/user/all_complex_protocol_list?id=${address}`,
     }
     const targetUrl = endpoints[endpoint]
-
-    // Use corsproxy.io which supports header forwarding
     const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
     const response = await fetch(proxyUrl, {
       headers: {
-        'x-cors-api-key': 'temp_' + Date.now(), // corsproxy.io requires this
+        'x-cors-api-key': 'temp_' + Date.now(),
         AccessKey: apiKey,
       },
     })
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`)
-    }
-
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
     return response.json()
   }
 
-  // In production, use our serverless function proxy
   const apiUrl = `/api/debank?endpoint=${endpoint}&address=${address}&apiKey=${encodeURIComponent(apiKey)}`
   const response = await fetch(apiUrl)
-
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
     throw new Error(errorData.error || `HTTP ${response.status}`)
   }
-
   return response.json()
 }
 
@@ -389,29 +202,149 @@ const fetchProtocolList = async (address: string, apiKey: string): Promise<any[]
   return fetchDeBank('all_complex_protocol_list', address, apiKey)
 }
 
+// CSS Keyframes (injected once)
+const injectStyles = () => {
+  if (typeof document === 'undefined') return
+  if (document.getElementById('treasury-dashboard-styles')) return
+
+  const style = document.createElement('style')
+  style.id = 'treasury-dashboard-styles'
+  style.textContent = `
+    @keyframes treasury-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    @keyframes treasury-spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes treasury-shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    @keyframes treasury-fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .treasury-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    .treasury-wallet-row:hover {
+      background: var(--vocs-color-background) !important;
+    }
+    .treasury-token-row:hover {
+      background: var(--vocs-color-background) !important;
+    }
+    .treasury-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    .treasury-protocol-card:hover {
+      border-color: var(--vocs-color-text3);
+      transform: scale(1.02);
+    }
+  `
+  document.head.appendChild(style)
+}
+
 // Components
+const LoadingSpinner: React.FC = () => (
+  <div
+    style={{
+      width: '20px',
+      height: '20px',
+      border: '2px solid var(--vocs-color-border)',
+      borderTopColor: COLORS.blue,
+      borderRadius: '50%',
+      animation: 'treasury-spin 1s linear infinite',
+    }}
+  />
+)
+
+const SkeletonLoader: React.FC<{ width?: string; height?: string }> = ({ width = '100%', height = '20px' }) => (
+  <div
+    style={{
+      width,
+      height,
+      background: 'linear-gradient(90deg, var(--vocs-color-background2) 25%, var(--vocs-color-background) 50%, var(--vocs-color-background2) 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'treasury-shimmer 1.5s infinite',
+      borderRadius: '4px',
+    }}
+  />
+)
+
 const StatCard: React.FC<{
   label: string
   value: string
   sub?: string
-  color?: string
-}> = ({ label, value, sub, color = '#8b5cf6' }) => (
-  <div style={styles.statCard}>
-    <div style={{ ...styles.statCardAccent, background: `linear-gradient(90deg, ${color}, ${color}88)` }} />
-    <div style={styles.statLabel}>{label}</div>
-    <div style={styles.statValue}>{value}</div>
-    {sub && <div style={styles.statSub}>{sub}</div>}
+  color: string
+  icon?: string
+  isLoading?: boolean
+}> = ({ label, value, sub, color, icon, isLoading }) => (
+  <div
+    className="treasury-card"
+    style={{
+      background: 'var(--vocs-color-background2)',
+      borderRadius: '16px',
+      padding: '24px',
+      border: '1px solid var(--vocs-color-border)',
+      position: 'relative',
+      overflow: 'hidden',
+      transition: 'all 0.3s ease',
+      cursor: 'default',
+    }}
+  >
+    <div
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '4px',
+        background: `linear-gradient(90deg, ${color}, ${color}88)`,
+      }}
+    />
+    <div
+      style={{
+        position: 'absolute',
+        top: '20px',
+        right: '20px',
+        fontSize: '28px',
+        opacity: 0.15,
+      }}
+    >
+      {icon}
+    </div>
+    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--vocs-color-text2)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+      {label}
+    </div>
+    {isLoading ? (
+      <SkeletonLoader height="36px" width="80%" />
+    ) : (
+      <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--vocs-color-text)', lineHeight: 1.1 }}>{value}</div>
+    )}
+    {sub && !isLoading && (
+      <div style={{ fontSize: '13px', color: 'var(--vocs-color-text3)', marginTop: '8px' }}>{sub}</div>
+    )}
   </div>
 )
 
-const ProtocolBadge: React.FC<{ name: string }> = ({ name }) => {
+const ProtocolBadge: React.FC<{ name: string; size?: 'sm' | 'md' }> = ({ name, size = 'sm' }) => {
   const color = getProtocolColor(name)
   return (
     <span
       style={{
-        ...styles.badge,
-        backgroundColor: `${color}20`,
+        padding: size === 'sm' ? '4px 10px' : '6px 14px',
+        borderRadius: '8px',
+        fontSize: size === 'sm' ? '11px' : '13px',
+        fontWeight: 600,
+        backgroundColor: `${color}18`,
         color: color,
+        border: `1px solid ${color}30`,
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '4px',
       }}
     >
       {name}
@@ -419,11 +352,31 @@ const ProtocolBadge: React.FC<{ name: string }> = ({ name }) => {
   )
 }
 
+const GlassCard: React.FC<{
+  children: React.ReactNode
+  style?: React.CSSProperties
+  className?: string
+}> = ({ children, style, className }) => (
+  <div
+    className={className}
+    style={{
+      background: 'var(--vocs-color-background2)',
+      borderRadius: '20px',
+      border: '1px solid var(--vocs-color-border)',
+      overflow: 'hidden',
+      ...style,
+    }}
+  >
+    {children}
+  </div>
+)
+
 export function TreasuryDashboard() {
   const [apiKey, setApiKey] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [loadingProgress, setLoadingProgress] = useState<number>(0)
 
   // Data state
   const [walletData, setWalletData] = useState<WalletData[]>([])
@@ -440,12 +393,10 @@ export function TreasuryDashboard() {
     liquid: StrategyData
   } | null>(null)
 
-  // Load API key from localStorage on mount
   useEffect(() => {
+    injectStyles()
     const storedKey = localStorage.getItem('DEBANK_API_KEY')
-    if (storedKey) {
-      setApiKey(storedKey)
-    }
+    if (storedKey) setApiKey(storedKey)
   }, [])
 
   const handleSetApiKey = () => {
@@ -468,6 +419,7 @@ export function TreasuryDashboard() {
 
     setIsLoading(true)
     setError(null)
+    setLoadingProgress(0)
 
     try {
       const wallets: WalletData[] = []
@@ -479,7 +431,11 @@ export function TreasuryDashboard() {
       let usualAmt = 0
       let usualVal = 0
 
-      for (const wallet of WALLETS) {
+      const totalWallets = WALLETS.length
+      for (let i = 0; i < WALLETS.length; i++) {
+        const wallet = WALLETS[i]
+        setLoadingProgress(Math.round(((i + 1) / totalWallets) * 100))
+
         try {
           const [balance, tokens, protocols] = await Promise.all([
             fetchTotalBalance(wallet.address, apiKey),
@@ -495,7 +451,6 @@ export function TreasuryDashboard() {
           }
           wallets.push(walletInfo)
 
-          // Process tokens
           ;(tokens || []).forEach((token: any) => {
             if (isBlacklisted(token.symbol)) return
             if (isProtocolReceiptToken(token.symbol)) return
@@ -521,20 +476,17 @@ export function TreasuryDashboard() {
               })
             }
 
-            // Track USUAL
             const sym = (token.symbol || '').toUpperCase()
             if (sym === 'USUAL' || sym === 'USUALX') {
               usualAmt += token.amount
               usualVal += usdValue
             }
 
-            // Track ETH exposure
             if (ETH_EXPOSURE_SYMBOLS.has(sym)) {
               ethExposure += usdValue
             }
           })
 
-          // Process protocols
           ;(protocols || []).forEach((protocol: any) => {
             const protocolName = protocol.name || 'Unknown'
             if (SKIP_PROTOCOLS.some((p) => protocolName.toLowerCase().includes(p.toLowerCase()))) return
@@ -543,11 +495,8 @@ export function TreasuryDashboard() {
               const netValue = item.stats?.net_usd_value || 0
               if (netValue > 0) {
                 defiValue += netValue
-
-                // Protocol totals
                 protocolsMap.set(protocolName, (protocolsMap.get(protocolName) || 0) + netValue)
 
-                // Add to tokens
                 const positionName = item.name || protocolName
                 const key = `${protocolName}: ${positionName}`
                 if (tokensMap.has(key)) {
@@ -565,7 +514,6 @@ export function TreasuryDashboard() {
                   })
                 }
 
-                // ETH exposure in protocols
                 const supplyTokens = item.detail?.supply_token_list || []
                 const borrowTokens = item.detail?.borrow_token_list || []
                 supplyTokens.forEach((t: any) => {
@@ -582,26 +530,20 @@ export function TreasuryDashboard() {
             })
           })
 
-          // Rate limiting
           await new Promise((r) => setTimeout(r, 200))
         } catch (err) {
           console.error(`Error fetching ${wallet.name}:`, err)
         }
       }
 
-      // Add static wallets
       STATIC_WALLETS.forEach((sw) => {
         wallets.push(sw as WalletData)
         uniqueTokens.add('Overcollateralization')
       })
 
-      // Calculate totals
       const total = wallets.reduce((sum, w) => sum + w.totalBalance, 0)
-
-      // Classify strategies
       const strategies = classifyAssets(wallets)
 
-      // Update state
       setWalletData(wallets)
       setAllTokens(Array.from(tokensMap.values()).sort((a, b) => b.usdValue - a.usdValue))
       setAllProtocols(
@@ -620,6 +562,7 @@ export function TreasuryDashboard() {
       setError(err.message || 'Failed to fetch data')
     } finally {
       setIsLoading(false)
+      setLoadingProgress(0)
     }
   }
 
@@ -635,7 +578,6 @@ export function TreasuryDashboard() {
         return
       }
 
-      // Classify tokens
       ;(wallet.tokens || []).forEach((token: any) => {
         if (isBlacklisted(token.symbol)) return
         if (isProtocolReceiptToken(token.symbol)) return
@@ -658,7 +600,6 @@ export function TreasuryDashboard() {
         }
       })
 
-      // Classify protocols
       ;(wallet.protocols || []).forEach((protocol: any) => {
         const protocolName = protocol.name || ''
         if (SKIP_PROTOCOLS.some((p) => protocolName.toLowerCase().includes(p.toLowerCase()))) return
@@ -681,7 +622,6 @@ export function TreasuryDashboard() {
       })
     })
 
-    // Sort items
     directional.items.sort((a, b) => b.value - a.value)
     semiLiquid.items.sort((a, b) => b.value - a.value)
     liquid.items.sort((a, b) => b.value - a.value)
@@ -689,37 +629,55 @@ export function TreasuryDashboard() {
     return { directional, semiLiquid, liquid }
   }
 
-  // Auto-fetch when API key is set
   useEffect(() => {
     if (apiKey && walletData.length === 0) {
       fetchAllData()
     }
   }, [apiKey])
 
-  // Render API key prompt if not set
+  // Render API key prompt
   if (!apiKey) {
     return (
-      <div style={styles.container}>
-        <div style={styles.header}>
-          <h1 style={styles.title}>🏦 USUAL DAO Treasury</h1>
-          <p style={styles.subtitle}>Live Multi-Wallet Portfolio Dashboard</p>
-        </div>
-        <div style={styles.apiKeyContainer}>
-          <p style={{ color: 'var(--vocs-color-text)', marginBottom: '8px', fontWeight: 600 }}>
-            DeBank API Key Required
+      <div style={{ padding: '24px', maxWidth: '600px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <div style={{ fontSize: '64px', marginBottom: '16px' }}>🏦</div>
+          <h1 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--vocs-color-text)', marginBottom: '8px' }}>
+            USUAL DAO Treasury
+          </h1>
+          <p style={{ color: 'var(--vocs-color-text2)', fontSize: '16px' }}>
+            Live Multi-Wallet Portfolio Dashboard
           </p>
-          <p style={{ color: 'var(--vocs-color-text2)', fontSize: '14px' }}>
+        </div>
+        <GlassCard style={{ padding: '32px', textAlign: 'center' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔑</div>
+          <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '12px', color: 'var(--vocs-color-text)' }}>
+            API Key Required
+          </h2>
+          <p style={{ color: 'var(--vocs-color-text2)', marginBottom: '24px', lineHeight: 1.6 }}>
             This dashboard requires a DeBank Pro API key to fetch live wallet data.
-            <br />
             Get your API key at{' '}
-            <a href="https://cloud.debank.com/" target="_blank" rel="noopener noreferrer">
+            <a href="https://cloud.debank.com/" target="_blank" rel="noopener noreferrer" style={{ color: COLORS.blue }}>
               cloud.debank.com
             </a>
           </p>
-          <button style={styles.apiKeyButton} onClick={handleSetApiKey}>
-            🔑 Set API Key
+          <button
+            className="treasury-btn"
+            onClick={handleSetApiKey}
+            style={{
+              background: `linear-gradient(135deg, ${COLORS.blue}, ${COLORS.purple})`,
+              color: 'white',
+              border: 'none',
+              padding: '14px 32px',
+              borderRadius: '12px',
+              fontSize: '16px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            Enter API Key
           </button>
-        </div>
+        </GlassCard>
       </div>
     )
   }
@@ -727,68 +685,125 @@ export function TreasuryDashboard() {
   // Loading state
   if (isLoading && walletData.length === 0) {
     return (
-      <div style={styles.container}>
-        <div style={styles.header}>
-          <h1 style={styles.title}>🏦 USUAL DAO Treasury</h1>
-          <p style={styles.subtitle}>Live Multi-Wallet Portfolio Dashboard</p>
+      <div style={{ padding: '24px', maxWidth: '600px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <div style={{ fontSize: '64px', marginBottom: '16px' }}>🏦</div>
+          <h1 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--vocs-color-text)', marginBottom: '8px' }}>
+            USUAL DAO Treasury
+          </h1>
         </div>
-        <div style={styles.loading}>Loading wallet data...</div>
+        <GlassCard style={{ padding: '40px', textAlign: 'center' }}>
+          <LoadingSpinner />
+          <p style={{ marginTop: '20px', color: 'var(--vocs-color-text2)', fontSize: '16px' }}>
+            Loading wallet data...
+          </p>
+          <div style={{ marginTop: '16px', background: 'var(--vocs-color-background)', borderRadius: '8px', height: '8px', overflow: 'hidden' }}>
+            <div
+              style={{
+                width: `${loadingProgress}%`,
+                height: '100%',
+                background: `linear-gradient(90deg, ${COLORS.blue}, ${COLORS.purple})`,
+                transition: 'width 0.3s ease',
+              }}
+            />
+          </div>
+          <p style={{ marginTop: '8px', color: 'var(--vocs-color-text3)', fontSize: '13px' }}>
+            {loadingProgress}% - Fetching {Math.ceil((loadingProgress / 100) * WALLETS.length)}/{WALLETS.length} wallets
+          </p>
+        </GlassCard>
       </div>
     )
   }
 
   const pureTreasuryValue = totalValue - usualTotal.value
   const topProtocol = allProtocols[0]
+  const walletValue = totalValue - totalDefiValue
 
-  // Strategy chart data
   const strategyChartData = strategyData
     ? [
-        { name: 'Directional', value: strategyData.directional.total, color: '#f59e0b' },
-        { name: 'Semi-Liquid', value: strategyData.semiLiquid.total, color: '#8b5cf6' },
-        { name: 'Liquid', value: strategyData.liquid.total, color: '#00d4aa' },
+        { name: 'Directional', value: strategyData.directional.total, color: COLORS.orange },
+        { name: 'Semi-Liquid', value: strategyData.semiLiquid.total, color: COLORS.purple },
+        { name: 'Liquid', value: strategyData.liquid.total, color: COLORS.green },
       ]
     : []
 
-  // Protocol chart data
-  const walletValue = totalValue - totalDefiValue
   const protocolChartData = [
-    { name: 'Wallet', value: walletValue, color: '#3b82f6' },
-    ...allProtocols.slice(0, 6).map((p) => ({
-      name: p.name,
-      value: p.value,
-      color: getProtocolColor(p.name),
-    })),
+    { name: 'Wallet', value: walletValue },
+    ...allProtocols.slice(0, 5),
   ]
 
   return (
-    <div style={styles.container}>
+    <div style={{ padding: '24px', maxWidth: '1600px', margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ ...styles.header, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <h1 style={{ ...styles.title, marginBottom: 0 }}>🏦 USUAL DAO Treasury</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
+            <h1 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--vocs-color-text)', margin: 0 }}>
+              🏦 USUAL DAO Treasury
+            </h1>
             <span
               style={{
-                padding: '4px 12px',
-                borderRadius: '16px',
-                fontSize: '12px',
-                fontWeight: 500,
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                color: '#10B981',
+                padding: '6px 14px',
+                borderRadius: '20px',
+                fontSize: '13px',
+                fontWeight: 600,
+                backgroundColor: `${COLORS.green}18`,
+                color: COLORS.green,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
               }}
             >
-              <span style={{ ...styles.statusDot, backgroundColor: '#10B981' }} />
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: COLORS.green, animation: 'treasury-pulse 2s infinite' }} />
               {lastUpdate ? `Updated ${lastUpdate.toLocaleTimeString()}` : 'Live'}
             </span>
           </div>
-          <p style={styles.subtitle}>Live Multi-Wallet Portfolio Dashboard</p>
+          <p style={{ color: 'var(--vocs-color-text2)', fontSize: '16px', margin: 0 }}>
+            Live Multi-Wallet Portfolio Dashboard
+          </p>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button style={styles.refreshButton} onClick={handleSetApiKey}>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            className="treasury-btn"
+            onClick={handleSetApiKey}
+            style={{
+              background: 'var(--vocs-color-background2)',
+              border: '1px solid var(--vocs-color-border)',
+              color: 'var(--vocs-color-text)',
+              padding: '10px 18px',
+              borderRadius: '10px',
+              fontSize: '14px',
+              fontWeight: 500,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease',
+            }}
+          >
             🔑 API Key
           </button>
-          <button style={styles.refreshButton} onClick={fetchAllData} disabled={isLoading}>
-            {isLoading ? '⏳' : '🔄'} Refresh
+          <button
+            className="treasury-btn"
+            onClick={fetchAllData}
+            disabled={isLoading}
+            style={{
+              background: `linear-gradient(135deg, ${COLORS.blue}, ${COLORS.purple})`,
+              border: 'none',
+              color: 'white',
+              padding: '10px 18px',
+              borderRadius: '10px',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              opacity: isLoading ? 0.7 : 1,
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {isLoading ? <LoadingSpinner /> : '🔄'} Refresh
           </button>
         </div>
       </div>
@@ -796,238 +811,292 @@ export function TreasuryDashboard() {
       {error && (
         <div
           style={{
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            color: '#ef4444',
-            padding: '16px',
+            background: `${COLORS.red}15`,
+            border: `1px solid ${COLORS.red}40`,
+            color: COLORS.red,
+            padding: '16px 20px',
             borderRadius: '12px',
             marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
           }}
         >
+          <span style={{ fontSize: '20px' }}>⚠️</span>
           {error}
         </div>
       )}
 
-      {/* Stats Overview */}
-      <div style={styles.statsGrid}>
-        <StatCard label="💰 Total Value" value={formatUSD(totalValue)} sub={`${walletData.length} addresses tracked`} color="#10B981" />
-        <StatCard
-          label="💎 Pure Treasury"
-          value={formatUSD(pureTreasuryValue)}
-          sub={`${((pureTreasuryValue / totalValue) * 100).toFixed(1)}% · wo/ USUAL`}
-          color="#06b6d4"
-        />
-        <StatCard label="🪙 Unique Tokens" value={String(uniqueTokenCount)} sub="Wallet tokens (excl. receipts)" color="#8b5cf6" />
-        <StatCard
-          label="⟠ ETH Exposure"
-          value={formatUSD(totalEthExposure)}
-          sub={`${((totalEthExposure / totalValue) * 100).toFixed(1)}% of portfolio`}
-          color="#f59e0b"
-        />
-        <StatCard label="🔒 USUAL Holdings" value={formatNumber(usualTotal.amount)} sub={formatUSD(usualTotal.value)} color="#ec4899" />
+      {/* Main Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+        <StatCard label="Total Value" value={formatUSD(totalValue)} sub={`${walletData.length} wallets tracked`} color={COLORS.green} icon="💰" />
+        <StatCard label="Pure Treasury" value={formatUSD(pureTreasuryValue)} sub={`${((pureTreasuryValue / totalValue) * 100).toFixed(1)}% (excl. USUAL)`} color={COLORS.cyan} icon="💎" />
+        <StatCard label="ETH Exposure" value={formatUSD(totalEthExposure)} sub={`${((totalEthExposure / totalValue) * 100).toFixed(1)}% of portfolio`} color={COLORS.orange} icon="⟠" />
+        <StatCard label="USUAL Holdings" value={formatNumber(usualTotal.amount)} sub={formatUSD(usualTotal.value)} color={COLORS.pink} icon="🔒" />
+        <StatCard label="Unique Tokens" value={String(uniqueTokenCount)} sub="Wallet tokens" color={COLORS.purple} icon="🪙" />
         {topProtocol && (
-          <StatCard
-            label="📊 Top Protocol"
-            value={topProtocol.name}
-            sub={`${formatUSD(topProtocol.value)} (${((topProtocol.value / totalValue) * 100).toFixed(1)}%)`}
-            color="#3b82f6"
-          />
+          <StatCard label="Top Protocol" value={topProtocol.name} sub={`${formatUSD(topProtocol.value)} (${((topProtocol.value / totalValue) * 100).toFixed(1)}%)`} color={COLORS.blue} icon="📊" />
         )}
-      </div>
-
-      {/* Protocol Summary */}
-      <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>📊 Allocation by Protocol</h3>
-        <div style={styles.protocolGrid}>
-          <div style={styles.protocolCard}>
-            <ProtocolBadge name="Wallet" />
-            <div style={{ fontSize: '18px', fontWeight: 700, marginTop: '8px' }}>{formatUSD(walletValue)}</div>
-            <div style={{ fontSize: '12px', color: 'var(--vocs-color-text2)' }}>
-              {((walletValue / totalValue) * 100).toFixed(1)}% of portfolio
-            </div>
-          </div>
-          {allProtocols.slice(0, 7).map((protocol) => (
-            <div key={protocol.name} style={styles.protocolCard}>
-              <ProtocolBadge name={protocol.name} />
-              <div style={{ fontSize: '18px', fontWeight: 700, marginTop: '8px' }}>{formatUSD(protocol.value)}</div>
-              <div style={{ fontSize: '12px', color: 'var(--vocs-color-text2)' }}>
-                {((protocol.value / totalValue) * 100).toFixed(1)}% of portfolio
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* Strategy Allocation */}
       {strategyData && (
-        <div style={styles.section}>
-          <h3 style={styles.sectionTitle}>🎯 Strategy Allocation</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '24px' }}>
-            <div style={{ height: '280px' }}>
-              <ResponsiveContainer width="100%" height="100%">
+        <div style={{ marginBottom: '40px' }}>
+          <h2 style={{ fontSize: '22px', fontWeight: 700, marginBottom: '20px', color: 'var(--vocs-color-text)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            🎯 Strategy Allocation
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '24px' }}>
+            <GlassCard style={{ padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
                   <Pie
                     data={strategyChartData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
+                    innerRadius={55}
+                    outerRadius={85}
                     dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    labelLine={false}
+                    strokeWidth={0}
                   >
                     {strategyChartData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => formatUSD(value)} />
+                  <Tooltip
+                    formatter={(value: number) => formatUSD(value)}
+                    contentStyle={{
+                      background: 'var(--vocs-color-background2)',
+                      border: '1px solid var(--vocs-color-border)',
+                      borderRadius: '8px',
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
-            </div>
-            <div style={styles.strategyGrid}>
+            </GlassCard>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
               {[
-                { key: 'directional', data: strategyData.directional, color: '#f59e0b', icon: '📈', title: 'Directional' },
-                { key: 'semiLiquid', data: strategyData.semiLiquid, color: '#8b5cf6', icon: '🔒', title: 'Semi-Liquid' },
-                { key: 'liquid', data: strategyData.liquid, color: '#00d4aa', icon: '💧', title: 'Liquid' },
-              ].map(({ key, data, color, icon, title }) => (
-                <div key={key} style={styles.strategyCard}>
-                  <div style={{ ...styles.statCardAccent, background: color }} />
+                { key: 'directional', data: strategyData.directional, color: COLORS.orange, icon: '📈', title: 'Directional', desc: 'Volatile assets & exposure' },
+                { key: 'semiLiquid', data: strategyData.semiLiquid, color: COLORS.purple, icon: '🔒', title: 'Semi-Liquid', desc: 'Lending & collateral' },
+                { key: 'liquid', data: strategyData.liquid, color: COLORS.green, icon: '💧', title: 'Liquid', desc: 'Stables & yield' },
+              ].map(({ key, data, color, icon, title, desc }) => (
+                <GlassCard key={key} style={{ padding: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                     <span style={{ fontSize: '24px' }}>{icon}</span>
-                    <span style={{ fontWeight: 700, fontSize: '16px' }}>{title}</span>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--vocs-color-text)' }}>{title}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--vocs-color-text3)' }}>{desc}</div>
+                    </div>
                   </div>
-                  <div style={{ fontSize: '28px', fontWeight: 700, color, marginBottom: '4px' }}>{formatUSD(data.total)}</div>
-                  <div style={{ fontSize: '13px', color: 'var(--vocs-color-text2)', marginBottom: '16px' }}>
+                  <div style={{ fontSize: '28px', fontWeight: 800, color, marginBottom: '4px' }}>{formatUSD(data.total)}</div>
+                  <div style={{ fontSize: '13px', color: 'var(--vocs-color-text3)', marginBottom: '16px' }}>
                     {((data.total / totalValue) * 100).toFixed(1)}% of portfolio
                   </div>
                   <div style={{ borderTop: '1px solid var(--vocs-color-border)', paddingTop: '12px' }}>
-                    {data.items.slice(0, 4).map((item) => (
-                      <div
-                        key={item.name}
-                        style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', padding: '6px 0' }}
-                      >
-                        <span style={{ color: 'var(--vocs-color-text2)' }}>{item.name}</span>
-                        <span>{formatUSD(item.value)}</span>
+                    {data.items.slice(0, 3).map((item) => (
+                      <div key={item.name} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', padding: '4px 0', color: 'var(--vocs-color-text2)' }}>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px' }}>{item.name}</span>
+                        <span style={{ fontWeight: 600, color: 'var(--vocs-color-text)' }}>{formatUSD(item.value)}</span>
                       </div>
                     ))}
                   </div>
-                </div>
+                </GlassCard>
               ))}
             </div>
           </div>
         </div>
       )}
 
-      {/* Wallets Table */}
-      <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>🏛️ Wallet Overview</h3>
-        <div style={styles.card}>
-          <div style={styles.cardBody}>
+      {/* Protocol Allocation */}
+      <div style={{ marginBottom: '40px' }}>
+        <h2 style={{ fontSize: '22px', fontWeight: 700, marginBottom: '20px', color: 'var(--vocs-color-text)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          📊 Protocol Allocation
+        </h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+          {[{ name: 'Wallet', value: walletValue }, ...allProtocols.slice(0, 7)].map((protocol) => (
+            <GlassCard
+              key={protocol.name}
+              className="treasury-protocol-card"
+              style={{ padding: '20px', cursor: 'default', transition: 'all 0.2s ease' }}
+            >
+              <div style={{ marginBottom: '12px' }}>
+                <ProtocolBadge name={protocol.name} size="md" />
+              </div>
+              <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--vocs-color-text)', marginBottom: '4px' }}>{formatUSD(protocol.value)}</div>
+              <div style={{ fontSize: '13px', color: 'var(--vocs-color-text3)' }}>
+                {((protocol.value / totalValue) * 100).toFixed(1)}% of portfolio
+              </div>
+              <div
+                style={{
+                  marginTop: '12px',
+                  height: '4px',
+                  background: 'var(--vocs-color-background)',
+                  borderRadius: '2px',
+                  overflow: 'hidden',
+                }}
+              >
+                <div
+                  style={{
+                    width: `${(protocol.value / totalValue) * 100}%`,
+                    height: '100%',
+                    background: getProtocolColor(protocol.name),
+                    borderRadius: '2px',
+                  }}
+                />
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+      </div>
+
+      {/* Two Column Layout */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '24px', marginBottom: '40px' }}>
+        {/* Wallets Table */}
+        <GlassCard>
+          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--vocs-color-border)' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--vocs-color-text)', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+              🏛️ Wallet Overview
+            </h3>
+          </div>
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
             {walletData
               .sort((a, b) => b.totalBalance - a.totalBalance)
-              .map((wallet) => (
-                <div key={wallet.address} style={styles.walletRow}>
-                  <div>
-                    <div style={{ fontFamily: 'monospace', fontSize: '13px' }}>
+              .map((wallet, index) => (
+                <div
+                  key={wallet.address}
+                  className="treasury-wallet-row"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '16px 24px',
+                    borderBottom: index < walletData.length - 1 ? '1px solid var(--vocs-color-border)' : 'none',
+                    transition: 'background 0.2s ease',
+                    cursor: 'default',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '24px' }}>{wallet.emoji}</span>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--vocs-color-text)' }}>{wallet.name}</div>
                       <a
                         href={`https://debank.com/profile/${wallet.address}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ color: 'var(--vocs-color-link)' }}
+                        style={{ fontFamily: 'monospace', fontSize: '12px', color: COLORS.blue, textDecoration: 'none' }}
                       >
                         {shortenAddress(wallet.address)}
                       </a>
                     </div>
-                    <div style={{ fontSize: '12px', color: 'var(--vocs-color-text2)', marginTop: '2px' }}>
-                      {wallet.emoji} {wallet.name}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                    {!wallet.isStatic && <ProtocolBadge name="Wallet" />}
-                    {wallet.isStatic ? (
-                      <ProtocolBadge name="Usual" />
-                    ) : (
-                      (wallet.protocols || [])
-                        .slice(0, 3)
-                        .map((p: any) => <ProtocolBadge key={p.name} name={p.name} />)
-                    )}
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '15px', fontWeight: 600 }}>{formatUSD(wallet.totalBalance)}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--vocs-color-text2)' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--vocs-color-text)' }}>{formatUSD(wallet.totalBalance)}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--vocs-color-text3)' }}>
                       {((wallet.totalBalance / totalValue) * 100).toFixed(1)}%
                     </div>
                   </div>
                 </div>
               ))}
           </div>
-        </div>
-      </div>
+        </GlassCard>
 
-      {/* Top Holdings */}
-      <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>🪙 Top Holdings</h3>
-        <div style={styles.card}>
-          <div style={{ ...styles.cardBody, maxHeight: '500px', overflowY: 'auto' }}>
-            {allTokens.slice(0, 15).map((token) => (
-              <div key={token.symbol + token.type} style={styles.tokenItem}>
+        {/* Top Holdings */}
+        <GlassCard>
+          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--vocs-color-border)' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--vocs-color-text)', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+              🪙 Top Holdings
+            </h3>
+          </div>
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            {allTokens.slice(0, 12).map((token, index) => (
+              <div
+                key={token.symbol + token.type + index}
+                className="treasury-token-row"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '14px 24px',
+                  borderBottom: index < 11 ? '1px solid var(--vocs-color-border)' : 'none',
+                  transition: 'background 0.2s ease',
+                  cursor: 'default',
+                }}
+              >
                 <div
                   style={{
-                    ...styles.tokenIcon,
-                    ...(token.logoUrl ? { backgroundImage: `url(${token.logoUrl})` } : {}),
-                    backgroundColor: token.type === 'protocol' ? `${getProtocolColor(token.protocol || '')}30` : undefined,
-                    color: token.type === 'protocol' ? getProtocolColor(token.protocol || '') : undefined,
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '12px',
+                    marginRight: '14px',
+                    backgroundColor: token.type === 'protocol' ? `${getProtocolColor(token.protocol || '')}20` : 'var(--vocs-color-background)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    color: token.type === 'protocol' ? getProtocolColor(token.protocol || '') : 'var(--vocs-color-text2)',
+                    backgroundImage: token.logoUrl ? `url(${token.logoUrl})` : 'none',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
                   }}
                 >
-                  {!token.logoUrl && (token.type === 'protocol' ? '🏦' : token.symbol.slice(0, 3))}
+                  {!token.logoUrl && (token.type === 'protocol' ? '📊' : token.symbol.slice(0, 2))}
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {token.symbol}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--vocs-color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {token.symbol}
+                    </span>
                     <span
                       style={{
-                        ...styles.badge,
-                        backgroundColor: token.type === 'protocol' ? `${getProtocolColor(token.protocol || '')}20` : '#3b82f620',
-                        color: token.type === 'protocol' ? getProtocolColor(token.protocol || '') : '#3b82f6',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
                         fontSize: '9px',
+                        fontWeight: 600,
+                        backgroundColor: token.type === 'protocol' ? `${getProtocolColor(token.protocol || '')}20` : `${COLORS.blue}20`,
+                        color: token.type === 'protocol' ? getProtocolColor(token.protocol || '') : COLORS.blue,
                       }}
                     >
-                      {token.type === 'protocol' ? 'PROTOCOL' : 'WALLET'}
+                      {token.type === 'protocol' ? 'DEFI' : 'WALLET'}
                     </span>
                   </div>
-                  <div style={{ fontSize: '12px', color: 'var(--vocs-color-text2)' }}>
-                    {token.type === 'protocol' ? (
-                      <span style={{ color: getProtocolColor(token.protocol || '') }}>📊 {token.protocol}</span>
-                    ) : (
-                      `${formatNumber(token.amount)} @ $${token.price.toFixed(4)}`
-                    )}
+                  <div style={{ fontSize: '12px', color: 'var(--vocs-color-text3)' }}>
+                    {token.type === 'protocol' ? token.protocol : `${formatNumber(token.amount)} @ $${token.price.toFixed(4)}`}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '14px', fontWeight: 600 }}>{formatUSD(token.usdValue)}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--vocs-color-text2)' }}>
-                    {((token.usdValue / totalValue) * 100).toFixed(1)}%
-                  </div>
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--vocs-color-text)' }}>{formatUSD(token.usdValue)}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--vocs-color-text3)' }}>{((token.usdValue / totalValue) * 100).toFixed(1)}%</div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </GlassCard>
       </div>
 
-      {/* Data Source Notice */}
+      {/* Footer */}
       <div
         style={{
-          marginTop: '40px',
-          padding: '16px',
-          backgroundColor: 'var(--vocs-color-background2)',
-          borderRadius: '8px',
+          padding: '20px 24px',
+          background: 'var(--vocs-color-background2)',
+          borderRadius: '12px',
           border: '1px solid var(--vocs-color-border)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '12px',
         }}
       >
-        <p style={{ fontSize: '12px', color: 'var(--vocs-color-text3)' }}>
-          Data source: DeBank Pro API. Tracking {WALLETS.length + STATIC_WALLETS.length} wallets.
-        </p>
+        <div style={{ fontSize: '13px', color: 'var(--vocs-color-text3)' }}>
+          Data source: DeBank Pro API • Tracking {WALLETS.length + STATIC_WALLETS.length} wallets
+        </div>
+        <div style={{ display: 'flex', gap: '16px', fontSize: '13px' }}>
+          <a href="https://debank.com" target="_blank" rel="noopener noreferrer" style={{ color: COLORS.blue, textDecoration: 'none' }}>
+            DeBank
+          </a>
+          <a href="https://etherscan.io" target="_blank" rel="noopener noreferrer" style={{ color: COLORS.blue, textDecoration: 'none' }}>
+            Etherscan
+          </a>
+        </div>
       </div>
     </div>
   )
