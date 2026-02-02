@@ -48,7 +48,6 @@ const WALLETS: WalletConfig[] = [
   { address: '0xc32e2a2F03d41768095e67b62C9c739f2C2Bc4aA', name: 'DAO HOT WALLET', emoji: '🔥' },
   { address: '0x81ad394C0Fa87e99Ca46E1aca093BEe020f203f4', name: 'DAO TREASURY', emoji: '🏦' },
   { address: '0xe3fd5a2ca538904a9e967cbd9e64518369e5a03f', name: 'DAO BUYBACK', emoji: '💎' },
-  { address: '0xcbf85d44178c01765ab32af72d5e291dcd39a06b', name: 'DAO AIRDROP', emoji: '🎁' },
   { address: '0xc45224eb37730fDE22bA371c0e368452Db5305E7', name: 'DAO Revenue Share', emoji: '💰' },
   { address: '0xb00b3f7b9f43e9af0b7d1c50baddfc5eff72ccd7', name: 'Ender Deployer', emoji: '🔧' },
 ]
@@ -355,7 +354,7 @@ export function TreasuryDashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
         {/* Strategy */}
         <div style={{ background: 'var(--vocs-color-background2)', border: '1px solid var(--vocs-color-border)', borderRadius: '8px', padding: '12px' }}>
-          <div style={{ fontWeight: 600, marginBottom: '10px' }}>🎯 Strategy Allocation</div>
+          <div style={{ fontWeight: 600, marginBottom: '10px', fontSize: '15px' }}>🎯 Strategy Allocation</div>
           <div style={{ display: 'flex', gap: '12px' }}>
             <div style={{ width: '120px', height: '120px', flexShrink: 0 }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -390,7 +389,7 @@ export function TreasuryDashboard() {
 
         {/* Protocols */}
         <div style={{ background: 'var(--vocs-color-background2)', border: '1px solid var(--vocs-color-border)', borderRadius: '8px', padding: '12px' }}>
-          <div style={{ fontWeight: 600, marginBottom: '10px' }}>📊 Protocol Allocation</div>
+          <div style={{ fontWeight: 600, marginBottom: '10px', fontSize: '15px' }}>📊 Protocol Allocation</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {[{ name: 'Wallet', value: walletVal }, ...protocols.slice(0, 5)].map((p, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -409,7 +408,7 @@ export function TreasuryDashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
         {/* Wallets */}
         <div style={{ background: 'var(--vocs-color-background2)', border: '1px solid var(--vocs-color-border)', borderRadius: '8px', overflow: 'hidden' }}>
-          <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--vocs-color-border)', fontWeight: 600 }}>🏛️ Wallets</div>
+          <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--vocs-color-border)', fontWeight: 600, fontSize: '15px' }}>🏛️ Wallets</div>
           <div style={{ maxHeight: '280px', overflowY: 'auto' }}>
             {wallets.sort((a, b) => b.totalBalance - a.totalBalance).map((w, i) => (
               <div key={w.address} className="tdb-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', borderBottom: i < wallets.length - 1 ? '1px solid var(--vocs-color-border)' : 'none', transition: 'background 0.15s' }}>
@@ -431,7 +430,7 @@ export function TreasuryDashboard() {
 
         {/* Holdings */}
         <div style={{ background: 'var(--vocs-color-background2)', border: '1px solid var(--vocs-color-border)', borderRadius: '8px', overflow: 'hidden' }}>
-          <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--vocs-color-border)', fontWeight: 600 }}>🪙 Top Holdings</div>
+          <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--vocs-color-border)', fontWeight: 600, fontSize: '15px' }}>🪙 Top Holdings</div>
           <div style={{ maxHeight: '280px', overflowY: 'auto' }}>
             {tokens.slice(0, 15).map((t, i) => (
               <div key={t.symbol + i} className="tdb-row" style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', borderBottom: i < 14 ? '1px solid var(--vocs-color-border)' : 'none', transition: 'background 0.15s' }}>
@@ -457,9 +456,9 @@ export function TreasuryDashboard() {
 
       {/* Detailed Holdings by Wallet */}
       <div style={{ marginTop: '20px' }}>
-        <div style={{ fontWeight: 600, marginBottom: '12px', fontSize: '14px' }}>💼 Detailed Holdings by Wallet</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {wallets.sort((a, b) => b.totalBalance - a.totalBalance).map((w) => {
+        <div style={{ fontWeight: 600, marginBottom: '12px', fontSize: '16px' }}>💼 Detailed Holdings by Wallet</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+          {wallets.sort((a, b) => b.totalBalance - a.totalBalance).map((w, walletIndex) => {
             const wTokens = (w.tokens || [])
               .filter((t: any) => !isBlacklisted(t.symbol) && !isReceiptToken(t.symbol) && t.amount > 0 && t.price > 0)
               .map((t: any) => ({ symbol: getDisplayName(t.symbol), amount: t.amount, price: t.price, usd: t.amount * t.price, logo: t.logo_url }))
@@ -486,12 +485,21 @@ export function TreasuryDashboard() {
             const defiValue = wProtos.reduce((s: number, p: any) => s + p.total, 0)
 
             return (
-              <div key={w.address} style={{ background: 'var(--vocs-color-background2)', border: '1px solid var(--vocs-color-border)', borderRadius: '8px' }}>
+              <React.Fragment key={w.address}>
+                {walletIndex > 0 && (
+                  <hr style={{
+                    border: 'none',
+                    height: '1px',
+                    background: 'currentColor',
+                    opacity: 0.2,
+                    margin: '28px 30px'
+                  }} />
+                )}
+                <div style={{ background: 'var(--vocs-color-background2)', border: '1px solid var(--vocs-color-border)', borderRadius: '8px' }}>
                 {/* Header */}
                 <div style={{ padding: '10px 14px', background: 'var(--vocs-color-background)', borderBottom: '1px solid var(--vocs-color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '18px' }}>{w.emoji}</span>
-                    <span style={{ fontWeight: 600 }}>{w.name}</span>
+                    <span style={{ fontWeight: 600, fontSize: '16px' }}>{w.name}</span>
                     <a href={`https://debank.com/profile/${w.address}`} target="_blank" rel="noopener" style={{ fontSize: '10px', color: COLORS.blue, fontFamily: 'monospace', opacity: 0.8 }}>{shortenAddress(w.address)}</a>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -541,41 +549,89 @@ export function TreasuryDashboard() {
                       </div>
                     )}
 
-                    {/* DeFi Positions */}
+                    {/* DeFi Positions - Card Grid */}
                     {wProtos.length > 0 && (
                       <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                           <span style={{ fontSize: '11px', fontWeight: 600, color: COLORS.purple }}>📊 DeFi Positions</span>
                           <span style={{ fontSize: '11px', fontWeight: 600 }}>{formatUSD(defiValue)}</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          {wProtos.slice(0, 4).map((p: any, pi: number) => (
-                            <div key={pi} style={{ background: 'var(--vocs-color-background)', borderRadius: '6px', padding: '8px 10px', borderLeft: `3px solid ${getProtocolColor(p.name)}` }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                                <span style={{ fontSize: '11px', fontWeight: 600, color: getProtocolColor(p.name) }}>{p.name}</span>
-                                <span style={{ fontSize: '11px', fontWeight: 600 }}>{formatUSD(p.total)}</span>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px' }}>
+                          {wProtos.flatMap((p: any) => p.positions.map((pos: any, posi: number) => ({
+                            ...pos,
+                            protocol: p.name,
+                            color: getProtocolColor(p.name)
+                          }))).sort((a: any, b: any) => b.value - a.value).slice(0, 8).map((pos: any, i: number) => (
+                            <div key={i} style={{
+                              background: 'var(--vocs-color-background)',
+                              borderRadius: '8px',
+                              padding: '10px 12px',
+                              borderTop: `3px solid ${pos.color}`,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '6px'
+                            }}>
+                              {/* Protocol badge + Value */}
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <span style={{
+                                  fontSize: '9px',
+                                  fontWeight: 600,
+                                  color: pos.color,
+                                  background: `${pos.color}15`,
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.3px'
+                                }}>{pos.protocol}</span>
+                                <span style={{ fontSize: '13px', fontWeight: 700 }}>{formatUSD(pos.value)}</span>
                               </div>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                {p.positions.slice(0, 3).map((pos: any, posi: number) => (
-                                  <div key={posi} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                      <span style={{ color: 'var(--vocs-color-text2)' }}>{pos.name}</span>
-                                      {pos.supply.length > 0 && pos.supply.slice(0, 2).map((s: any, si: number) => (
-                                        <span key={si} style={{ background: `${COLORS.green}15`, color: COLORS.green, padding: '1px 5px', borderRadius: '3px', fontSize: '9px' }}>+{formatNumber(s.amount)} {s.symbol}</span>
-                                      ))}
-                                      {pos.borrow.length > 0 && pos.borrow.slice(0, 2).map((b: any, bi: number) => (
-                                        <span key={bi} style={{ background: `${COLORS.red}15`, color: COLORS.red, padding: '1px 5px', borderRadius: '3px', fontSize: '9px' }}>-{formatNumber(b.amount)} {b.symbol}</span>
-                                      ))}
-                                    </div>
-                                    <span style={{ fontWeight: 500, color: 'var(--vocs-color-text2)' }}>{formatUSD(pos.value)}</span>
-                                  </div>
-                                ))}
-                              </div>
-                              {p.positions.length > 3 && <div style={{ fontSize: '9px', color: 'var(--vocs-color-text3)', marginTop: '4px' }}>+ {p.positions.length - 3} more</div>}
+
+                              {/* Position name */}
+                              <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--vocs-color-text)', lineHeight: 1.2 }}>{pos.name}</div>
+
+                              {/* Supply/Borrow tokens */}
+                              {(pos.supply.length > 0 || pos.borrow.length > 0) && (
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
+                                  {pos.supply.slice(0, 2).map((s: any, si: number) => (
+                                    <span key={`s${si}`} style={{
+                                      background: `${COLORS.green}12`,
+                                      color: COLORS.green,
+                                      padding: '2px 6px',
+                                      borderRadius: '4px',
+                                      fontSize: '9px',
+                                      fontWeight: 500,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '2px'
+                                    }}>
+                                      <span style={{ opacity: 0.7 }}>▲</span> {formatNumber(s.amount)} {s.symbol}
+                                    </span>
+                                  ))}
+                                  {pos.borrow.slice(0, 2).map((b: any, bi: number) => (
+                                    <span key={`b${bi}`} style={{
+                                      background: `${COLORS.red}12`,
+                                      color: COLORS.red,
+                                      padding: '2px 6px',
+                                      borderRadius: '4px',
+                                      fontSize: '9px',
+                                      fontWeight: 500,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '2px'
+                                    }}>
+                                      <span style={{ opacity: 0.7 }}>▼</span> {formatNumber(b.amount)} {b.symbol}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
-                        {wProtos.length > 4 && <div style={{ fontSize: '10px', color: 'var(--vocs-color-text3)', marginTop: '6px' }}>+ {wProtos.length - 4} more protocols</div>}
+                        {wProtos.flatMap((p: any) => p.positions).length > 8 && (
+                          <div style={{ fontSize: '10px', color: 'var(--vocs-color-text3)', marginTop: '8px', textAlign: 'center' }}>
+                            + {wProtos.flatMap((p: any) => p.positions).length - 8} more positions
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -586,6 +642,7 @@ export function TreasuryDashboard() {
                   </div>
                 )}
               </div>
+              </React.Fragment>
             )
           })}
         </div>
