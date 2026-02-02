@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 320">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="barGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a90a4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3a7a94;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="debtGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#e94560;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c93550;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="profitGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d9a5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00b989;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="700" height="320" fill="url(#bg2)" rx="12"/>
+
+  <!-- Title -->
+  <text x="350" y="30" text-anchor="middle" fill="#fff" font-family="system-ui, sans-serif" font-size="18" font-weight="600">Example: 1,000 bUSD0 Initial Deposit</text>
+
+  <!-- Y-axis labels -->
+  <text x="45" y="80" text-anchor="end" fill="rgba(255,255,255,0.6)" font-family="system-ui, sans-serif" font-size="11">2,000</text>
+  <text x="45" y="140" text-anchor="end" fill="rgba(255,255,255,0.6)" font-family="system-ui, sans-serif" font-size="11">1,500</text>
+  <text x="45" y="200" text-anchor="end" fill="rgba(255,255,255,0.6)" font-family="system-ui, sans-serif" font-size="11">1,000</text>
+  <text x="45" y="260" text-anchor="end" fill="rgba(255,255,255,0.6)" font-family="system-ui, sans-serif" font-size="11">500</text>
+
+  <!-- Grid lines -->
+  <line x1="55" y1="75" x2="650" y2="75" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="55" y1="135" x2="650" y2="135" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="55" y1="195" x2="650" y2="195" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="55" y1="255" x2="650" y2="255" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+
+  <!-- Base line -->
+  <line x1="55" y1="270" x2="650" y2="270" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+
+  <!-- Step 1: Initial -->
+  <rect x="80" y="195" width="50" height="75" rx="4" fill="url(#barGrad)"/>
+  <text x="105" y="185" text-anchor="middle" fill="#4a90a4" font-family="system-ui, sans-serif" font-size="12" font-weight="600">1,000</text>
+  <text x="105" y="290" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-family="system-ui, sans-serif" font-size="10">Initial</text>
+
+  <!-- Step 2: After Borrow -->
+  <rect x="170" y="195" width="50" height="75" rx="4" fill="url(#barGrad)"/>
+  <rect x="230" y="204" width="50" height="66" rx="4" fill="url(#debtGrad)"/>
+  <text x="195" y="185" text-anchor="middle" fill="#4a90a4" font-family="system-ui, sans-serif" font-size="12" font-weight="600">1,000</text>
+  <text x="255" y="194" text-anchor="middle" fill="#e94560" font-family="system-ui, sans-serif" font-size="12" font-weight="600">880</text>
+  <text x="220" y="290" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-family="system-ui, sans-serif" font-size="10">Borrow</text>
+
+  <!-- Step 3: After Swap -->
+  <rect x="310" y="99" width="50" height="171" rx="4" fill="url(#barGrad)"/>
+  <rect x="370" y="204" width="50" height="66" rx="4" fill="url(#debtGrad)"/>
+  <text x="335" y="89" text-anchor="middle" fill="#4a90a4" font-family="system-ui, sans-serif" font-size="12" font-weight="600">1,950</text>
+  <text x="395" y="194" text-anchor="middle" fill="#e94560" font-family="system-ui, sans-serif" font-size="12" font-weight="600">880</text>
+  <text x="360" y="290" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-family="system-ui, sans-serif" font-size="10">+Swap</text>
+
+  <!-- Step 4: Final Position -->
+  <rect x="450" y="99" width="50" height="171" rx="4" fill="url(#barGrad)"/>
+  <rect x="510" y="168" width="50" height="102" rx="4" fill="url(#debtGrad)"/>
+  <text x="475" y="89" text-anchor="middle" fill="#4a90a4" font-family="system-ui, sans-serif" font-size="12" font-weight="600">1,950</text>
+  <text x="535" y="158" text-anchor="middle" fill="#e94560" font-family="system-ui, sans-serif" font-size="12" font-weight="600">1,716</text>
+  <text x="500" y="290" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-family="system-ui, sans-serif" font-size="10">Loop</text>
+
+  <!-- Result: Profit -->
+  <rect x="590" y="243" width="50" height="27" rx="4" fill="url(#profitGrad)"/>
+  <text x="615" y="233" text-anchor="middle" fill="#00d9a5" font-family="system-ui, sans-serif" font-size="12" font-weight="600">~232</text>
+  <text x="615" y="290" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-family="system-ui, sans-serif" font-size="10">Profit</text>
+
+  <!-- Legend -->
+  <rect x="80" y="305" width="12" height="12" rx="2" fill="url(#barGrad)"/>
+  <text x="98" y="315" fill="rgba(255,255,255,0.8)" font-family="system-ui, sans-serif" font-size="11">Collateral (bUSD0)</text>
+
+  <rect x="230" y="305" width="12" height="12" rx="2" fill="url(#debtGrad)"/>
+  <text x="248" y="315" fill="rgba(255,255,255,0.8)" font-family="system-ui, sans-serif" font-size="11">Debt (USD0)</text>
+
+  <rect x="360" y="305" width="12" height="12" rx="2" fill="url(#profitGrad)"/>
+  <text x="378" y="315" fill="rgba(255,255,255,0.8)" font-family="system-ui, sans-serif" font-size="11">Profit</text>
+</svg>
