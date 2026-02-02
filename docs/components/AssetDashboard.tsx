@@ -68,13 +68,32 @@ const fetchDuneData = async (queryId: number): Promise<any[]> => {
 
 // Transform Dune data to our format
 const transformDuneData = (rows: any[]): AssetDataPoint[] => {
+  // Log first row to debug data structure
+  if (rows.length > 0) {
+    console.log('Dune row sample:', rows[0])
+  }
+
   return rows
-    .map((row) => ({
-      timestamp: row.timestamp?.split('T')[0] || row.date || '',
-      price: Number(row.price) || 0,
-      delta: Number(row.delta) || 0,
-      rate: Number(row.rate) || 0,
-    }))
+    .map((row) => {
+      // Handle different timestamp formats
+      const rawTimestamp = row.timestamp || row.date || row.time || row.block_time || ''
+      const timestamp = typeof rawTimestamp === 'string'
+        ? rawTimestamp.split('T')[0]
+        : new Date(rawTimestamp).toISOString().split('T')[0]
+
+      const price = Number(row.price) || 0
+      const delta = Number(row.delta) || 0
+
+      // Calculate APR from rate field, or derive from delta (annualized)
+      // delta is typically daily change, so APR = delta * 365 * 100
+      let rate = Number(row.rate) || 0
+      if (rate === 0 && delta !== 0) {
+        rate = delta * 365 * 100 // Annualize daily delta to APR percentage
+      }
+
+      return { timestamp, price, delta, rate }
+    })
+    .filter((row) => row.timestamp && row.timestamp !== 'Invalid Date')
     .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
 }
 
