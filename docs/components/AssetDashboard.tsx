@@ -326,6 +326,31 @@ const styles = {
   },
 }
 
+// Helper function to format dates for chart X-axis
+const formatDateForChart = (value: any): string => {
+  if (value === null || value === undefined || value === '') {
+    return ''
+  }
+
+  try {
+    // If it's already a formatted date string like "2024-01-15"
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const [year, month, day] = value.split('-').map(Number)
+      return `${month}/${day}`
+    }
+
+    // Try to parse as date
+    const date = new Date(value)
+    if (!isNaN(date.getTime())) {
+      return `${date.getMonth() + 1}/${date.getDate()}`
+    }
+
+    return String(value)
+  } catch {
+    return String(value)
+  }
+}
+
 // Custom tooltip component
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -384,6 +409,16 @@ export function AssetDashboard() {
         }
       }
 
+      console.log('=== Data loading complete ===')
+      console.log('Has live data:', hasLiveData)
+      for (const [key, values] of Object.entries(data)) {
+        console.log(`${key}: ${values.length} points`)
+        if (values.length > 0) {
+          console.log(`  First: timestamp=${values[0].timestamp}, price=${values[0].price}, rate=${values[0].rate}`)
+          console.log(`  Last: timestamp=${values[values.length-1].timestamp}, price=${values[values.length-1].price}, rate=${values[values.length-1].rate}`)
+        }
+      }
+
       setAssetData(data)
       setIsLiveData(hasLiveData)
       setIsLoading(false)
@@ -401,20 +436,26 @@ export function AssetDashboard() {
 
   // Prepare data for combined yield chart
   const prepareYieldChartData = () => {
-    if (!assetData.SPKCC) return []
+    if (!assetData.SPKCC || assetData.SPKCC.length === 0) {
+      console.log('No SPKCC data available for yield chart')
+      return []
+    }
 
-    const maxLength = Math.max(
-      assetData.SPKCC?.length || 0,
-      assetData.eurSPKCC?.length || 0,
-      assetData.USCC?.length || 0
-    )
-
-    return Array.from({ length: maxLength }, (_, index) => ({
-      timestamp: assetData.SPKCC?.[index]?.timestamp || assetData.eurSPKCC?.[index]?.timestamp || assetData.USCC?.[index]?.timestamp || '',
-      SPKCC: assetData.SPKCC?.[index]?.rate || 0,
+    // Use SPKCC timestamps as the base and merge other assets
+    const result = assetData.SPKCC.map((spkccPoint, index) => ({
+      timestamp: spkccPoint.timestamp,
+      SPKCC: spkccPoint.rate || 0,
       eurSPKCC: assetData.eurSPKCC?.[index]?.rate || 0,
       USCC: assetData.USCC?.[index]?.rate || 0,
     }))
+
+    console.log('Yield chart data prepared:', result.length, 'points')
+    if (result.length > 0) {
+      console.log('First yield point:', result[0])
+      console.log('Last yield point:', result[result.length - 1])
+    }
+
+    return result
   }
 
   // Prepare data for price chart of a specific asset
@@ -519,12 +560,7 @@ export function AssetDashboard() {
                 dataKey="timestamp"
                 stroke="#9CA3AF"
                 tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                tickFormatter={(value) => {
-                  if (!value || typeof value !== 'string') return ''
-                  const date = new Date(value)
-                  if (isNaN(date.getTime())) return value
-                  return `${date.getMonth() + 1}/${date.getDate()}`
-                }}
+                tickFormatter={formatDateForChart}
               />
               <YAxis
                 stroke="#9CA3AF"
@@ -595,12 +631,7 @@ export function AssetDashboard() {
                       dataKey="timestamp"
                       stroke="#9CA3AF"
                       tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                      tickFormatter={(value) => {
-                        if (!value || typeof value !== 'string') return ''
-                        const date = new Date(value)
-                        if (isNaN(date.getTime())) return value
-                        return `${date.getMonth() + 1}/${date.getDate()}`
-                      }}
+                      tickFormatter={formatDateForChart}
                     />
                     <YAxis
                       stroke="#9CA3AF"
