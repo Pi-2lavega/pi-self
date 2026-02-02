@@ -353,7 +353,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null
 }
 
-// Filter data by time range and recalculate APR using adaptive moving average
+// Filter data by time range and recalculate APR based on the full period
 const filterByTimeRange = (data: AssetDataPoint[], days: number): AssetDataPoint[] => {
   if (!data || data.length === 0) return []
 
@@ -365,36 +365,21 @@ const filterByTimeRange = (data: AssetDataPoint[], days: number): AssetDataPoint
 
   if (filtered.length < 2) return filtered
 
-  // Adaptive window size based on selected time range
-  // 14D -> 3 days, 30D -> 7 days, 90D -> 14 days
-  const WINDOW_DAYS = days <= 14 ? 3 : days <= 30 ? 7 : 14
+  // Get the start price and date for the filtered period
+  const startPrice = filtered[0].price
+  const startDate = new Date(filtered[0].timestamp)
 
-  return filtered.map((point, index) => {
+  // Recalculate APR based on return from start of filtered period
+  return filtered.map((point) => {
     const currDate = new Date(point.timestamp)
     const currPrice = point.price
-
-    // Find the price from WINDOW_DAYS ago
-    let lookbackIndex = index
-    for (let i = index - 1; i >= 0; i--) {
-      const prevDate = new Date(filtered[i].timestamp)
-      const daysDiff = (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24)
-      if (daysDiff >= WINDOW_DAYS) {
-        lookbackIndex = i
-        break
-      }
-      lookbackIndex = i
-    }
-
-    const lookbackPrice = filtered[lookbackIndex].price
-    const lookbackDate = new Date(filtered[lookbackIndex].timestamp)
-    const daysElapsed = Math.max(1, (currDate.getTime() - lookbackDate.getTime()) / (1000 * 60 * 60 * 24))
+    const daysElapsed = Math.max(1, (currDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
 
     let rate = 0
-    // Calculate rate if we have enough lookback (at least half the window)
-    if (lookbackPrice > 0 && daysElapsed >= WINDOW_DAYS / 2 && lookbackIndex !== index) {
-      const periodReturn = (currPrice - lookbackPrice) / lookbackPrice
-      // Annualize the return
-      rate = (periodReturn / daysElapsed) * 365 * 100
+    if (startPrice > 0 && daysElapsed > 0) {
+      const totalReturn = (currPrice - startPrice) / startPrice
+      // Annualize the return: APR = (total return / days elapsed) * 365 * 100
+      rate = (totalReturn / daysElapsed) * 365 * 100
       // Clamp to reasonable bounds
       rate = Math.max(-15, Math.min(30, rate))
     }
