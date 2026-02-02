@@ -7,6 +7,7 @@ export default defineConfig({
   iconUrl: '/favicon.ico',
   topNav: [
     { text: 'Overview', link: '/overview' },
+    { text: 'Dashboard', link: '/dashboard' },
     { text: 'Products', link: '/products/usual-zero-rate-uzr' },
     { text: 'Resources', link: '/resources/whitepaper' },
   ],
@@ -17,6 +18,12 @@ export default defineConfig({
         { text: 'Fixed-Rate Credit', link: '/' },
         { text: 'Overview', link: '/overview' },
         { text: 'FAQ', link: '/overview/faq' },
+      ],
+    },
+    {
+      text: 'Dashboard',
+      items: [
+        { text: 'Asset Dashboard', link: '/dashboard' },
       ],
     },
     {
