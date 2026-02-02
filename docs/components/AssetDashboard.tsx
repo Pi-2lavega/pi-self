@@ -67,34 +67,69 @@ const fetchDuneData = async (queryId: number): Promise<any[]> => {
 }
 
 // Transform Dune data to our format
-const transformDuneData = (rows: any[]): AssetDataPoint[] => {
+const transformDuneData = (rows: any[], assetKey: string): AssetDataPoint[] => {
   // Log first row to debug data structure
   if (rows.length > 0) {
-    console.log('Dune row sample:', rows[0])
+    console.log(`Dune row sample for ${assetKey}:`, rows[0])
   }
 
-  return rows
+  const transformedRows = rows
     .map((row) => {
-      // Handle different timestamp formats
+      // Handle different timestamp formats (Dune uses "YYYY-MM-DD HH:MM:SS.sss UTC")
       const rawTimestamp = row.timestamp || row.date || row.time || row.block_time || ''
-      const timestamp = typeof rawTimestamp === 'string'
-        ? rawTimestamp.split('T')[0]
-        : new Date(rawTimestamp).toISOString().split('T')[0]
+      let timestamp: string
+      if (typeof rawTimestamp === 'string') {
+        // Extract just the date part from "2025-11-06 17:29:35.000 UTC"
+        timestamp = rawTimestamp.split(' ')[0]
+      } else {
+        timestamp = new Date(rawTimestamp).toISOString().split('T')[0]
+      }
 
       const price = Number(row.price) || 0
       const delta = Number(row.delta) || 0
 
-      // Calculate APR from rate field, or derive from delta (annualized)
-      // delta is typically daily change, so APR = delta * 365 * 100
-      let rate = Number(row.rate) || 0
-      if (rate === 0 && delta !== 0) {
-        rate = delta * 365 * 100 // Annualize daily delta to APR percentage
-      }
-
-      return { timestamp, price, delta, rate }
+      // Rate will be calculated after sorting based on actual price changes
+      return { timestamp, price, delta, rate: 0 }
     })
-    .filter((row) => row.timestamp && row.timestamp !== 'Invalid Date')
+    .filter((row) => row.timestamp && row.timestamp !== 'Invalid Date' && row.price > 0)
     .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+
+  // Calculate APR based on actual time elapsed between data points
+  // We calculate the overall APR from the dataset's start to each point
+  if (transformedRows.length < 2) {
+    return transformedRows
+  }
+
+  const startDate = new Date(transformedRows[0].timestamp)
+  const startPrice = transformedRows[0].price
+
+  for (let i = 0; i < transformedRows.length; i++) {
+    const currDate = new Date(transformedRows[i].timestamp)
+    const currPrice = transformedRows[i].price
+
+    // Calculate days elapsed from start
+    const daysElapsed = Math.max(1, (currDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+
+    if (startPrice > 0 && daysElapsed > 0) {
+      // Calculate total return and annualize it
+      const totalReturn = (currPrice - startPrice) / startPrice
+      // APR = (total return / days elapsed) * 365 * 100
+      transformedRows[i].rate = (totalReturn / daysElapsed) * 365 * 100
+    }
+
+    // Clamp rate to reasonable bounds (-5% to 20% APR for stable yield tokens)
+    // Allow small negative values for transparency
+    transformedRows[i].rate = Math.max(-5, Math.min(20, transformedRows[i].rate))
+  }
+
+  // Log the calculated APR for debugging
+  if (transformedRows.length > 0) {
+    const lastRow = transformedRows[transformedRows.length - 1]
+    const daysTotal = Math.max(1, (new Date(lastRow.timestamp).getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+    console.log(`${assetKey} APR calculation: start=${startPrice.toFixed(6)}, end=${lastRow.price.toFixed(6)}, days=${daysTotal.toFixed(0)}, APR=${lastRow.rate.toFixed(2)}%`)
+  }
+
+  return transformedRows
 }
 
 // Mock data generator - Used when API key is not configured
@@ -291,6 +326,10 @@ const styles = {
 // Custom tooltip component
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
+    // Filter out null/undefined values
+    const validPayload = payload.filter((entry: any) => entry.value != null)
+    if (validPayload.length === 0) return null
+
     return (
       <div style={{
         backgroundColor: 'var(--vocs-color-background)',
@@ -300,9 +339,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
       }}>
         <p style={{ fontSize: '12px', color: 'var(--vocs-color-text2)', marginBottom: '8px' }}>{label}</p>
-        {payload.map((entry: any, index: number) => (
+        {validPayload.map((entry: any, index: number) => (
           <p key={index} style={{ fontSize: '14px', color: entry.color, marginBottom: '4px' }}>
-            {entry.name}: {entry.value.toFixed(4)}
+            {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(2) : entry.value}%
           </p>
         ))}
       </div>
@@ -311,13 +350,46 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null
 }
 
+// Filter data by time range and recalculate APR for that period
+const filterByTimeRange = (data: AssetDataPoint[], days: number): AssetDataPoint[] => {
+  if (!data || data.length === 0) return []
+
+  const now = new Date()
+  const cutoffDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000)
+
+  // Filter to only include data within the time range
+  const filtered = data.filter((point) => new Date(point.timestamp) >= cutoffDate)
+
+  if (filtered.length < 2) return filtered
+
+  // Recalculate APR based on the filtered period
+  const startPrice = filtered[0].price
+  const startDate = new Date(filtered[0].timestamp)
+
+  return filtered.map((point) => {
+    const currDate = new Date(point.timestamp)
+    const daysElapsed = Math.max(1, (currDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+
+    let rate = 0
+    if (startPrice > 0 && daysElapsed > 0) {
+      const totalReturn = (point.price - startPrice) / startPrice
+      rate = (totalReturn / daysElapsed) * 365 * 100
+      // Clamp to reasonable bounds
+      rate = Math.max(-10, Math.min(25, rate))
+    }
+
+    return { ...point, rate }
+  })
+}
+
 export function AssetDashboard() {
-  const [assetData, setAssetData] = useState<AssetData>({})
+  const [rawAssetData, setRawAssetData] = useState<AssetData>({})
   const [selectedAsset, setSelectedAsset] = useState<string>('all')
   const [timeRange, setTimeRange] = useState<number>(30)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isLiveData, setIsLiveData] = useState<boolean>(false)
 
+  // Load raw data once
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true)
@@ -329,22 +401,31 @@ export function AssetDashboard() {
         const duneRows = await fetchDuneData(queryId)
 
         if (duneRows.length > 0) {
-          data[assetKey] = transformDuneData(duneRows)
+          data[assetKey] = transformDuneData(duneRows, assetKey)
           hasLiveData = true
         } else {
           // Fallback to mock data
           const config = ASSETS[assetKey as keyof typeof ASSETS]
-          data[assetKey] = generateMockData(config.basePrice, config.baseRate, timeRange)
+          data[assetKey] = generateMockData(config.basePrice, config.baseRate, 365)
         }
       }
 
-      setAssetData(data)
+      setRawAssetData(data)
       setIsLiveData(hasLiveData)
       setIsLoading(false)
     }
 
     loadData()
-  }, [timeRange])
+  }, [])
+
+  // Filter data based on selected time range
+  const assetData = React.useMemo(() => {
+    const filtered: AssetData = {}
+    for (const [key, data] of Object.entries(rawAssetData)) {
+      filtered[key] = filterByTimeRange(data, timeRange)
+    }
+    return filtered
+  }, [rawAssetData, timeRange])
 
   // Get latest values for summary cards
   const getLatestValue = (asset: string, field: keyof AssetDataPoint) => {
@@ -353,21 +434,34 @@ export function AssetDashboard() {
     return data[data.length - 1][field]
   }
 
-  // Prepare data for combined yield chart
+  // Prepare data for combined yield chart - align by date
   const prepareYieldChartData = () => {
-    if (!assetData.SPKCC) return []
+    // Collect all unique timestamps across all assets
+    const allTimestamps = new Set<string>()
+    Object.values(assetData).forEach((data) => {
+      data.forEach((point) => allTimestamps.add(point.timestamp))
+    })
 
-    const maxLength = Math.max(
-      assetData.SPKCC?.length || 0,
-      assetData.eurSPKCC?.length || 0,
-      assetData.USCC?.length || 0
+    // Sort timestamps chronologically
+    const sortedTimestamps = Array.from(allTimestamps).sort(
+      (a, b) => new Date(a).getTime() - new Date(b).getTime()
     )
 
-    return Array.from({ length: maxLength }, (_, index) => ({
-      timestamp: assetData.SPKCC?.[index]?.timestamp || assetData.eurSPKCC?.[index]?.timestamp || assetData.USCC?.[index]?.timestamp || '',
-      SPKCC: assetData.SPKCC?.[index]?.rate || 0,
-      eurSPKCC: assetData.eurSPKCC?.[index]?.rate || 0,
-      USCC: assetData.USCC?.[index]?.rate || 0,
+    // Create lookup maps for each asset
+    const lookups: Record<string, Record<string, number>> = {}
+    for (const [key, data] of Object.entries(assetData)) {
+      lookups[key] = {}
+      data.forEach((point) => {
+        lookups[key][point.timestamp] = point.rate
+      })
+    }
+
+    // Build aligned data
+    return sortedTimestamps.map((timestamp) => ({
+      timestamp,
+      SPKCC: lookups.SPKCC?.[timestamp] ?? null,
+      eurSPKCC: lookups.eurSPKCC?.[timestamp] ?? null,
+      USCC: lookups.USCC?.[timestamp] ?? null,
     }))
   }
 
@@ -494,6 +588,7 @@ export function AssetDashboard() {
                   strokeWidth={2}
                   dot={false}
                   activeDot={{ r: 6 }}
+                  connectNulls={true}
                 />
               ))}
             </LineChart>
