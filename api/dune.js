@@ -1,4 +1,4 @@
-export default async function handler(req: any, res: any) {
+export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
@@ -14,10 +14,11 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'Missing queryId parameter' })
   }
 
-  const apiKey = process.env.VITE_DUNE_API_KEY
+  // Server-side env vars don't use VITE_ prefix
+  const apiKey = process.env.DUNE_API_KEY
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'Dune API key not configured' })
+    return res.status(500).json({ error: 'Dune API key not configured (DUNE_API_KEY)' })
   }
 
   try {
