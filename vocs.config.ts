@@ -24,6 +24,7 @@ export default defineConfig({
       text: 'Dashboard',
       items: [
         { text: 'Asset Dashboard', link: '/dashboard' },
+        { text: 'Treasury Dashboard', link: '/treasury' },
       ],
     },
     {
