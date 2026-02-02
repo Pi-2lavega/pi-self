@@ -33,7 +33,7 @@ const DUNE_QUERIES = {
   USCC: 6603571,
 }
 
-// Fetch data from Dune API
+// Fetch data from Dune API (using CORS proxy for browser compatibility)
 const fetchDuneData = async (queryId: number): Promise<any[]> => {
   if (!DUNE_API_KEY) {
     console.warn('Dune API key not configured, using mock data')
@@ -41,20 +41,24 @@ const fetchDuneData = async (queryId: number): Promise<any[]> => {
   }
 
   try {
-    const response = await fetch(
-      `https://api.dune.com/api/v1/query/${queryId}/results`,
-      {
-        headers: {
-          'X-Dune-API-Key': DUNE_API_KEY,
-        },
-      }
-    )
+    // Use CORS proxy to bypass browser restrictions
+    const duneUrl = `https://api.dune.com/api/v1/query/${queryId}/results`
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(duneUrl)}`
+
+    console.log('Fetching Dune data for query:', queryId)
+
+    const response = await fetch(proxyUrl, {
+      headers: {
+        'X-Dune-API-Key': DUNE_API_KEY,
+      },
+    })
 
     if (!response.ok) {
       throw new Error(`Dune API error: ${response.status}`)
     }
 
     const data = await response.json()
+    console.log('Dune data received:', data.result?.rows?.length, 'rows')
     return data.result?.rows || []
   } catch (error) {
     console.error('Error fetching Dune data:', error)
