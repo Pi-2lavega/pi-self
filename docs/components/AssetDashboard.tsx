@@ -10,6 +10,8 @@ import {
   ResponsiveContainer,
   Area,
   AreaChart,
+  ReferenceLine,
+  ReferenceArea,
 } from 'recharts'
 
 // Types for asset data
@@ -350,7 +352,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null
 }
 
-// Filter data by time range and recalculate APR for that period
+// Filter data by time range and recalculate APR using adaptive moving average
 const filterByTimeRange = (data: AssetDataPoint[], days: number): AssetDataPoint[] => {
   if (!data || data.length === 0) return []
 
@@ -362,20 +364,38 @@ const filterByTimeRange = (data: AssetDataPoint[], days: number): AssetDataPoint
 
   if (filtered.length < 2) return filtered
 
-  // Recalculate APR based on the filtered period
-  const startPrice = filtered[0].price
-  const startDate = new Date(filtered[0].timestamp)
+  // Adaptive window size based on selected time range
+  // 14D -> 3 days, 30D -> 7 days, 90D -> 14 days
+  const WINDOW_DAYS = days <= 14 ? 3 : days <= 30 ? 7 : 14
 
-  return filtered.map((point) => {
+  return filtered.map((point, index) => {
     const currDate = new Date(point.timestamp)
-    const daysElapsed = Math.max(1, (currDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+    const currPrice = point.price
+
+    // Find the price from WINDOW_DAYS ago
+    let lookbackIndex = index
+    for (let i = index - 1; i >= 0; i--) {
+      const prevDate = new Date(filtered[i].timestamp)
+      const daysDiff = (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24)
+      if (daysDiff >= WINDOW_DAYS) {
+        lookbackIndex = i
+        break
+      }
+      lookbackIndex = i
+    }
+
+    const lookbackPrice = filtered[lookbackIndex].price
+    const lookbackDate = new Date(filtered[lookbackIndex].timestamp)
+    const daysElapsed = Math.max(1, (currDate.getTime() - lookbackDate.getTime()) / (1000 * 60 * 60 * 24))
 
     let rate = 0
-    if (startPrice > 0 && daysElapsed > 0) {
-      const totalReturn = (point.price - startPrice) / startPrice
-      rate = (totalReturn / daysElapsed) * 365 * 100
+    // Calculate rate if we have enough lookback (at least half the window)
+    if (lookbackPrice > 0 && daysElapsed >= WINDOW_DAYS / 2 && lookbackIndex !== index) {
+      const periodReturn = (currPrice - lookbackPrice) / lookbackPrice
+      // Annualize the return
+      rate = (periodReturn / daysElapsed) * 365 * 100
       // Clamp to reasonable bounds
-      rate = Math.max(-10, Math.min(25, rate))
+      rate = Math.max(-15, Math.min(30, rate))
     }
 
     return { ...point, rate }
@@ -496,7 +516,7 @@ export function AssetDashboard() {
 
       {/* Time Range Selector */}
       <div style={styles.tabContainer}>
-        {[7, 14, 30, 90].map((days) => (
+        {[14, 30, 90].map((days) => (
           <button
             key={days}
             style={timeRange === days ? styles.tabActive : styles.tab}
@@ -562,6 +582,8 @@ export function AssetDashboard() {
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={prepareYieldChartData()} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--vocs-color-border)" />
+              <ReferenceArea y1={-100} y2={0} fill="rgba(239, 68, 68, 0.15)" strokeOpacity={0} />
+              <ReferenceLine y={0} stroke="rgba(239, 68, 68, 0.5)" strokeWidth={1} />
               <XAxis
                 dataKey="timestamp"
                 stroke="#9CA3AF"
