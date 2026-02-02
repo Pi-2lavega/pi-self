@@ -87,8 +87,22 @@ const transformDuneData = (rows: any[]): AssetDataPoint[] => {
       if (rawTimestamp) {
         try {
           if (typeof rawTimestamp === 'string') {
-            // Handle ISO format (2024-01-15T00:00:00.000Z) or date only (2024-01-15)
-            timestamp = rawTimestamp.split('T')[0]
+            // Handle various formats:
+            // - ISO: "2024-01-15T00:00:00.000Z"
+            // - Dune: "2025-11-06 17:29:35.000 UTC"
+            // - Date only: "2024-01-15"
+
+            // First, try to extract just the date part (YYYY-MM-DD)
+            const dateMatch = rawTimestamp.match(/^(\d{4}-\d{2}-\d{2})/)
+            if (dateMatch) {
+              timestamp = dateMatch[1]
+            } else {
+              // Fallback: try to parse and format
+              const parsed = new Date(rawTimestamp.replace(' UTC', 'Z').replace(' ', 'T'))
+              if (!isNaN(parsed.getTime())) {
+                timestamp = parsed.toISOString().split('T')[0]
+              }
+            }
           } else if (typeof rawTimestamp === 'number') {
             // Handle Unix timestamp (seconds or milliseconds)
             const ms = rawTimestamp > 1e12 ? rawTimestamp : rawTimestamp * 1000
