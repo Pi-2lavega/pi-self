@@ -35,13 +35,13 @@ const DUNE_QUERIES = {
   USCC: 6603571,
 }
 
-// Fetch data from Dune API using corsproxy.io CORS proxy
+// Fetch data from Dune API using codetabs CORS proxy
 const fetchDuneData = async (queryId: number): Promise<any[]> => {
   try {
     console.log('Fetching Dune data for query:', queryId)
 
     const duneUrl = `https://api.dune.com/api/v1/query/${queryId}/results?api_key=${DUNE_API_KEY}`
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(duneUrl)}`
+    const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(duneUrl)}`
 
     const response = await fetch(proxyUrl)
 
