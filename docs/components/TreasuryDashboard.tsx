@@ -335,29 +335,58 @@ const getDisplayName = (symbol: string): string => {
   return nameMap[symbol] || symbol
 }
 
-// API functions
-const fetchWithProxy = async (url: string, apiKey: string): Promise<any> => {
-  const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`
-  const response = await fetch(proxyUrl, {
-    headers: {
-      accept: 'application/json',
-      AccessKey: apiKey,
-    },
-  })
-  if (!response.ok) throw new Error(`HTTP ${response.status}`)
+// API functions - use Vercel serverless function to bypass CORS
+const fetchDeBank = async (endpoint: string, address: string, apiKey: string): Promise<any> => {
+  // Check if we're on localhost (dev mode) or production
+  const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+
+  if (isLocalhost) {
+    // In dev mode, use a CORS proxy since serverless functions aren't available
+    const endpoints: Record<string, string> = {
+      total_balance: `https://pro-openapi.debank.com/v1/user/total_balance?id=${address}`,
+      all_token_list: `https://pro-openapi.debank.com/v1/user/all_token_list?id=${address}&is_all=true`,
+      all_complex_protocol_list: `https://pro-openapi.debank.com/v1/user/all_complex_protocol_list?id=${address}`,
+    }
+    const targetUrl = endpoints[endpoint]
+
+    // Use corsproxy.io which supports header forwarding
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
+    const response = await fetch(proxyUrl, {
+      headers: {
+        'x-cors-api-key': 'temp_' + Date.now(), // corsproxy.io requires this
+        AccessKey: apiKey,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+
+    return response.json()
+  }
+
+  // In production, use our serverless function proxy
+  const apiUrl = `/api/debank?endpoint=${endpoint}&address=${address}&apiKey=${encodeURIComponent(apiKey)}`
+  const response = await fetch(apiUrl)
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.error || `HTTP ${response.status}`)
+  }
+
   return response.json()
 }
 
 const fetchTotalBalance = async (address: string, apiKey: string): Promise<any> => {
-  return fetchWithProxy(`https://pro-openapi.debank.com/v1/user/total_balance?id=${address}`, apiKey)
+  return fetchDeBank('total_balance', address, apiKey)
 }
 
 const fetchTokenList = async (address: string, apiKey: string): Promise<any[]> => {
-  return fetchWithProxy(`https://pro-openapi.debank.com/v1/user/all_token_list?id=${address}&is_all=true`, apiKey)
+  return fetchDeBank('all_token_list', address, apiKey)
 }
 
 const fetchProtocolList = async (address: string, apiKey: string): Promise<any[]> => {
-  return fetchWithProxy(`https://pro-openapi.debank.com/v1/user/all_complex_protocol_list?id=${address}`, apiKey)
+  return fetchDeBank('all_complex_protocol_list', address, apiKey)
 }
 
 // Components
