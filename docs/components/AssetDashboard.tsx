@@ -24,31 +24,74 @@ interface AssetData {
   [key: string]: AssetDataPoint[]
 }
 
-// Mock data generator - Replace with actual Dune API integration
+// Dune API configuration
+const DUNE_API_KEY = import.meta.env.VITE_DUNE_API_KEY || ''
+
+const DUNE_QUERIES = {
+  SPKCC: 6603491,
+  eurSPKCC: 6598168,
+  USCC: 6603571,
+}
+
+// Fetch data from Dune API
+const fetchDuneData = async (queryId: number): Promise<any[]> => {
+  if (!DUNE_API_KEY) {
+    console.warn('Dune API key not configured, using mock data')
+    return []
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.dune.com/api/v1/query/${queryId}/results`,
+      {
+        headers: {
+          'X-Dune-API-Key': DUNE_API_KEY,
+        },
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error(`Dune API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    return data.result?.rows || []
+  } catch (error) {
+    console.error('Error fetching Dune data:', error)
+    return []
+  }
+}
+
+// Transform Dune data to our format
+const transformDuneData = (rows: any[]): AssetDataPoint[] => {
+  return rows
+    .map((row) => ({
+      timestamp: row.timestamp?.split('T')[0] || row.date || '',
+      price: Number(row.price) || 0,
+      delta: Number(row.delta) || 0,
+      rate: Number(row.rate) || 0,
+    }))
+    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+}
+
+// Mock data generator - Used when API key is not configured
 const generateMockData = (basePrice: number, baseRate: number, days: number = 30): AssetDataPoint[] => {
   const data: AssetDataPoint[] = []
   const now = new Date()
 
-  // Daily yield rate (APR / 365)
   const dailyYield = baseRate / 100 / 365
 
   for (let i = days; i >= 0; i--) {
     const date = new Date(now)
     date.setDate(date.getDate() - i)
 
-    // Days elapsed from start (price increases over time due to yield accumulation)
     const daysElapsed = days - i
-
-    // Price grows with accumulated yield + small random variation
     const accumulatedYield = basePrice * dailyYield * daysElapsed
     const randomVariation = (Math.random() - 0.5) * 0.002 * basePrice
     const price = basePrice + accumulatedYield + randomVariation
 
-    // Rate varies slightly around base rate
     const rateVariation = (Math.random() - 0.5) * 0.5
     const rate = baseRate + rateVariation
-
-    // Delta is the daily change percentage
     const delta = dailyYield + (Math.random() - 0.5) * 0.001
 
     data.push({
@@ -196,6 +239,30 @@ const styles = {
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
     color: '#EF4444',
   },
+  loading: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '40px',
+    color: 'var(--vocs-color-text2)',
+  },
+  apiStatus: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '4px 12px',
+    borderRadius: '16px',
+    fontSize: '12px',
+    fontWeight: 500,
+  },
+  apiLive: {
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    color: '#10B981',
+  },
+  apiMock: {
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    color: '#F59E0B',
+  },
 }
 
 // Custom tooltip component
@@ -225,14 +292,35 @@ export function AssetDashboard() {
   const [assetData, setAssetData] = useState<AssetData>({})
   const [selectedAsset, setSelectedAsset] = useState<string>('all')
   const [timeRange, setTimeRange] = useState<number>(30)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [isLiveData, setIsLiveData] = useState<boolean>(false)
 
   useEffect(() => {
-    // Generate mock data for each asset
-    const data: AssetData = {}
-    Object.entries(ASSETS).forEach(([key, config]) => {
-      data[key] = generateMockData(config.basePrice, config.baseRate, timeRange)
-    })
-    setAssetData(data)
+    const loadData = async () => {
+      setIsLoading(true)
+      const data: AssetData = {}
+      let hasLiveData = false
+
+      // Try to fetch from Dune API
+      for (const [assetKey, queryId] of Object.entries(DUNE_QUERIES)) {
+        const duneRows = await fetchDuneData(queryId)
+
+        if (duneRows.length > 0) {
+          data[assetKey] = transformDuneData(duneRows)
+          hasLiveData = true
+        } else {
+          // Fallback to mock data
+          const config = ASSETS[assetKey as keyof typeof ASSETS]
+          data[assetKey] = generateMockData(config.basePrice, config.baseRate, timeRange)
+        }
+      }
+
+      setAssetData(data)
+      setIsLiveData(hasLiveData)
+      setIsLoading(false)
+    }
+
+    loadData()
   }, [timeRange])
 
   // Get latest values for summary cards
@@ -246,9 +334,15 @@ export function AssetDashboard() {
   const prepareYieldChartData = () => {
     if (!assetData.SPKCC) return []
 
-    return assetData.SPKCC.map((_, index) => ({
-      timestamp: assetData.SPKCC[index].timestamp,
-      SPKCC: assetData.SPKCC[index]?.rate || 0,
+    const maxLength = Math.max(
+      assetData.SPKCC?.length || 0,
+      assetData.eurSPKCC?.length || 0,
+      assetData.USCC?.length || 0
+    )
+
+    return Array.from({ length: maxLength }, (_, index) => ({
+      timestamp: assetData.SPKCC?.[index]?.timestamp || assetData.eurSPKCC?.[index]?.timestamp || assetData.USCC?.[index]?.timestamp || '',
+      SPKCC: assetData.SPKCC?.[index]?.rate || 0,
       eurSPKCC: assetData.eurSPKCC?.[index]?.rate || 0,
       USCC: assetData.USCC?.[index]?.rate || 0,
     }))
@@ -259,11 +353,27 @@ export function AssetDashboard() {
     return assetData[asset] || []
   }
 
+  if (isLoading) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.loading}>Loading data...</div>
+      </div>
+    )
+  }
+
   return (
     <div style={styles.container}>
       {/* Header */}
       <div style={styles.header}>
-        <h1 style={styles.title}>Asset Dashboard</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+          <h1 style={{ ...styles.title, marginBottom: 0 }}>Asset Dashboard</h1>
+          <span style={{
+            ...styles.apiStatus,
+            ...(isLiveData ? styles.apiLive : styles.apiMock),
+          }}>
+            {isLiveData ? '● Live Data' : '● Mock Data'}
+          </span>
+        </div>
         <p style={styles.subtitle}>Real-time yield and price data for SPKCC, eurSPKCC, and USCC</p>
       </div>
 
@@ -450,8 +560,8 @@ export function AssetDashboard() {
         border: '1px solid var(--vocs-color-border)',
       }}>
         <p style={{ fontSize: '12px', color: 'var(--vocs-color-text3)' }}>
-          Data source: Dune Analytics queries (6603491, 6598168, 6603571).
-          Currently displaying mock data - integrate Dune API for live data.
+          Data source: Dune Analytics queries (SPKCC: 6603491, eurSPKCC: 6598168, USCC: 6603571).
+          {!isLiveData && ' Configure VITE_DUNE_API_KEY environment variable for live data.'}
         </p>
       </div>
     </div>
