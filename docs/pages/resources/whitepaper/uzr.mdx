@@ -1,0 +1,41 @@
+# UZR Whitepaper
+
+## Usual Zero Rate Module
+
+The UZR Whitepaper provides technical documentation for the Usual Zero Rate module.
+
+## Reference
+
+This document is based on **UIP-18**, proposed on January 8, 2025.
+
+## Documentation
+
+- [Usual Zero Rate Module PDF](https://docs.fira.money/Usual_Zero_Rate_Module.pdf)
+- [Usual Documentation](https://docs.usual.money/)
+
+## Key Technical Details
+
+### Overview
+
+The Usual Zero Rate (UZR) is a lending module built on top of Fira that enables users to access low-cost leverage on bUSD0 (Bonded USD0).
+
+### Mechanism
+
+1. **Collateral**: Users deposit bUSD0 as collateral
+2. **Borrowing**: Borrow USD0 at 0% base rate + 10 bps fee
+3. **Oracle**: Fixed 1:1 price oracle for bUSD0/USD0
+4. **Maturity**: bUSD0 converges to 1.00 USD0 at maturity
+
+### Parameters
+
+| Parameter | Value |
+|-----------|-------|
+| Collateral Asset | bUSD0 |
+| Borrowed Asset | USD0 |
+| Base Rate | 0% |
+| Fee | 10 bps (0.10% APR) |
+| Maximum LTV | 88% |
+
+### Integration
+
+The UZR is fully integrated with the Usual ecosystem and includes a dedicated migrator contract for existing USL (Usual Stability Loan) users.

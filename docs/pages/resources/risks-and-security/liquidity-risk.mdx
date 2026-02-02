@@ -1,0 +1,74 @@
+# Liquidity Risk
+
+## Overview
+
+**Liquidity risk** encompasses the inability to enter, exit, repay, or unwind positions at a reasonable price or within an expected timeframe due to insufficient Fira market liquidity. Market conditions can shift rapidly, materially affecting costs and execution options.
+
+## 1. Risk Description
+
+### A. Fixed-Maturity Borrowing — AMM Exit Liquidity
+
+Borrowers attempting early loan settlement by swapping cash for BT through an AMM face potential challenges. When AMM liquidity proves insufficient or imbalanced, borrowers may encounter:
+
+- Significantly worse implied rates from slippage and price impact
+- Forced delays in repayment or position unwinding
+- Need to hold positions until maturity for primary market settlement
+
+### B. Floating-Rate Lending — Redemption Dynamics
+
+Lenders can typically withdraw unutilized supplied assets. However, when borrowing or withdrawals surge, available liquidity becomes fully consumed. In such cases, redemptions may become dependent on borrowers repaying, potentially causing withdrawal delays or temporary inability to access funds.
+
+### C. Dynamic Lenders — Rehypothecation Constraints
+
+Fira may allocate pool reserves to external strategies to enhance capital efficiency. Consequently, not all reserves remain immediately liquid. Liquidity providers may face temporary inability to withdraw fully while rehypothecated assets remain deployed elsewhere.
+
+## 2. Materialization Scenarios
+
+- **AMM Drought**: Volatility and position imbalances reduce swap liquidity, making early settlement prohibitively expensive
+- **Floating Market Run**: Rapid lender withdrawals spike utilization, exhausting remaining liquidity
+- **Rehypothecation Delays**: Externally deployed assets cannot be recalled quickly enough for withdrawal demands
+- **Correlated Stress**: Identical conditions driving liquidity reduction also amplify liquidation and execution risks
+
+Network congestion, oracle failures, MEV, and third-party breakdowns may occur suddenly without advance notice.
+
+## 3. Mitigation Mechanisms and Limitations
+
+Fira implements measures intended to **reduce** liquidity risk. However, these protections are not guarantees, may not work under stress, and do not prevent adverse outcomes.
+
+### Base Liquidity Incentives
+
+Market parameters encourage liquidity provision through fixed-maturity exposure and floating-rate benefits. Effectiveness depends entirely on market conditions and participant behavior, potentially failing during market stress.
+
+### Delay vs. Loss Distinction
+
+Insufficient liquidity typically causes delays rather than immediate losses. However, delays remain economically harmful—they increase liquidation risk, enable adverse price movements, and create opportunity costs. In extreme scenarios, liquidity constraints contribute to actual losses through forced unfavorable execution or inability to rebalance collateral.
+
+### Alternative Settlement Paths
+
+Certain users can mint BT via primary market mechanisms to facilitate early repayment. Under stress:
+
+- CT liquidity becomes thin or unavailable
+- Prices turn unfavorable
+- Rehypothecation yields decline, making this option costly
+
+Primary market settlement at maturity remains most reliable but faces network condition vulnerabilities.
+
+### Endogenous Rate Response
+
+Rising utilization increases borrowing rates, incentivizing repayments and attracting new supply while compensating lenders. Limitations include:
+
+- Abrupt, severe rate spikes
+- Borrower inability or unwillingness to repay quickly
+- Insufficient new liquidity arrival, extending illiquidity periods
+
+## 4. User Considerations
+
+- Expect liquidity to deteriorate suddenly; plan for worst-case scenarios
+- Early fixed-maturity exits carry substantial costs or execution impossibility; treat accordingly
+- Floating-rate withdrawals lack temporal guarantees; timing depends on utilization and repayment flows
+- Rehypothecation introduces additional liquidity layer; assume temporary reserve unavailability
+- Interface estimates prove unreliable under stress; displayed figures remain indicative only
+
+## Final Note
+
+This disclosure remains informational and incomplete. Fira operates experimentally with significant risk. Users may lose entire positions and face unexpected exit restrictions.

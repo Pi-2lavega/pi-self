@@ -1,0 +1,50 @@
+# Interest Rate Risk
+
+## Overview
+
+Fira's markets—both fixed-maturity and floating-rate—face exposure to interest rate volatility. Rates can move rapidly, may be difficult to predict, and substantially impact borrowing costs and position values.
+
+## Fixed-Maturity Markets
+
+### Mechanism
+
+In fixed-maturity markets, the "fixed" rate derives from market pricing, specifically the discount of BT (Bond Tokens) relative to underlying assets. Market conditions drive BT discount fluctuations, meaning the effective rate when entering or exiting positions can shift considerably.
+
+### Key Risk
+
+Early settlement before maturity may produce realized rates materially different from origination rates—either higher or lower.
+
+### Mitigation
+
+Liquidity concentration around "reasonable" rate ranges aims to reduce extreme outcomes, though this provides no guarantee and may prove inadequate during stress.
+
+## Floating-Rate Markets
+
+### Mechanism
+
+Borrowing rates depend directly on utilization ratios. Supply shocks or sudden borrowing demand can cause utilization to spike rapidly, driving sharp rate increases.
+
+### Key Risk
+
+Users face potential rapid and material rate escalation, possibly triggering forced deleveraging or liquidation.
+
+### Mitigation
+
+Curators may manage liquidity reserves, but curator actions face practical limitations and may occur too slowly during crises.
+
+## User Protections
+
+To manage interest rate risk:
+
+- Assume early exit rates may deviate significantly from entry rates
+- Anticipate possible rate spikes in floating markets
+- Monitor liquidity and utilization continuously
+- Recognize displayed rates as indicative, not execution guarantees
+
+## Important Notice
+
+Interest rate risk cannot be eliminated. Users should understand that:
+
+- Fixed rates are only truly fixed if held to maturity
+- Floating rates can change rapidly and unpredictably
+- Interface displays are estimates, not guarantees

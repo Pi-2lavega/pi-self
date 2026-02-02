@@ -1,0 +1,80 @@
+# Usual Zero Rate (UZR)
+
+## Executive Summary
+
+The Usual Zero Rate (UZR) is built on top of Fira and enables users to access low-cost leverage on bUSD0.
+
+## Fundamentals
+
+### bUSD0 and USD0
+
+bUSD0 represents the locked form of USD0 until a defined maturity date. Unlike directly accessible USD0, bUSD0 typically trades below par on secondary markets and converges towards 1.00 USD0 as maturity approaches.
+
+### Borrowing Mechanism
+
+Users can deposit bUSD0 as collateral to borrow USD0 at a **0% base rate, plus a 10 bps (0.10% APR) fee**. The system applies a fixed-price oracle valuing bUSD0 and USD0 at a 1:1 ratio, maximizing borrowing capacity.
+
+## Leverage Strategy
+
+The leverage loop works as follows:
+
+1. Deposit bUSD0 as collateral
+2. Borrow USD0
+3. Swap USD0 for bUSD0 at a discount
+4. Redeposit the acquired bUSD0
+5. Repeat until maximum leverage
+
+## Detailed Numerical Example
+
+### Initial Parameters:
+- Initial collateral: 1,000 bUSD0
+- Maximum LTV: 0.88
+- Swap rate: 880 USD0 → 950 bUSD0 (price: 0.9263 USD0)
+- Borrowing fee: 10 bps annually
+
+### Step 1:
+Deposit 1,000 bUSD0, borrow 880 USD0
+
+### Step 2:
+Swap 880 USD0 for 950 bUSD0
+
+### Step 3:
+Deposit 950 bUSD0, borrow 836 USD0
+
+### Position after loop:
+- Total collateral: 1,950 bUSD0
+- Total debt: 1,716 USD0
+
+### Step 4:
+Interest accrues until maturity
+- At 10 bps APR over 1 year: ~1.716 USD0 in interest
+- Example with 8 USD0 interest
+
+### Step 5:
+At maturity, bUSD0 resets to 1.00 USD0
+
+### Profit Calculation Formula:
+
+```
+Profit = Total Collateral - (Total Debt + Interest)
+```
+
+- With 8 USD0 interest: profit ≈ 226 USD0
+- With 10 bps APR: profit ≈ 232.284 USD0
+
+## Maximum Leverage
+
+**Maximum leverage formula:**
+
+```
+Leverage_max = LTV / (Price - LTV) + 1
+```
+
+This formula determines the maximum achievable leverage based on LTV and the realized exchange rate.
+
+## Key Considerations
+
+- The UZR only accepts bUSD0 as collateral
+- The Usual DAO is the sole lender/supplier for the vault
+- Users must repay USD0 debt to recover their collateral
+- A dedicated USL to UZR migrator contract is available for existing USL users

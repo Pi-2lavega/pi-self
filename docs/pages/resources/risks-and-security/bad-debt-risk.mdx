@@ -1,0 +1,48 @@
+# Bad Debt Risk
+
+## Overview
+
+Bad debt materializes when borrower collateral cannot be liquidated for sufficient value to repay outstanding debt. The shortfall is typically distributed among lenders in the affected market, reducing total assets and realized yields.
+
+## Risk Definition
+
+Bad debt occurs when a borrower's collateral cannot be liquidated for enough value to fully repay the outstanding debt. The shortfall emerges after accounting for execution costs including price impact, slippage, and transaction fees.
+
+## Materialization Scenarios
+
+Bad debt risk intensifies during volatile or illiquid periods:
+
+### Rapid Price Deterioration
+
+Collateral value declines faster than liquidation response speed.
+
+### Reduced Market Liquidity
+
+Significant slippage occurs during collateral sales due to thin order books.
+
+### Uneconomic Liquidations
+
+Timely actions are discouraged due to elevated costs or adverse pricing.
+
+### Network Disruptions
+
+Timely execution is prevented or gas costs become prohibitive.
+
+## Mitigation Mechanisms
+
+Fira employs liquidation thresholds and exposure limits to manage risk. The protocol may set LLTVs and exposure limits using conservative, data-informed methodologies, including historical analysis of tail price moves.
+
+### Critical Limitation
+
+These protections offer no guarantees. Extreme market events, sudden liquidity collapse, oracle failures, MEV dynamics, or smart contract issues can still trigger losses despite conservative parameter settings.
+
+## Key Warnings for Liquidity Providers
+
+- Lenders assume credit-like risk exposure despite overcollateralization
+- Losses distribute across the lending pool rather than concentrating individually
+- Collateral quality and trading depth directly affect default probability
+- Market stress events—when exits are most difficult—present maximum loss scenarios
+
+## Important Notice
+
+Bad debt risk is inherent to lending protocols. Users providing liquidity should understand that their deposits may be reduced due to bad debt events, and there is no insurance or guarantee against such losses.
