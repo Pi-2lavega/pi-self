@@ -25,6 +25,7 @@ export default defineConfig({
       items: [
         { text: 'Asset Dashboard', link: '/dashboard' },
         { text: 'Treasury Dashboard', link: '/treasury' },
+        { text: 'Usual Analytics', link: '/usual' },
       ],
     },
     {
